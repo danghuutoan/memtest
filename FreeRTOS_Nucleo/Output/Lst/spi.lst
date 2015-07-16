@@ -1,0 +1,655 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.eabi_attribute 27, 3
+   4              		.eabi_attribute 28, 1
+   5              		.fpu fpv4-sp-d16
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 2
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.thumb
+  16              		.file	"spi.c"
+  17              		.text
+  18              	.Ltext0:
+  19              		.cfi_sections	.debug_frame
+  20              		.section	.text.SPI_StartReceive,"ax",%progbits
+  21              		.align	2
+  22              		.global	SPI_StartReceive
+  23              		.thumb
+  24              		.thumb_func
+  26              	SPI_StartReceive:
+  27              	.LFB123:
+  28              		.file 1 "spi/spi.c"
+   1:spi/spi.c     **** /*
+   2:spi/spi.c     ****  * spi.c
+   3:spi/spi.c     ****  *
+   4:spi/spi.c     ****  *  Created on: Mar 29, 2015
+   5:spi/spi.c     ****  *      Author: toan
+   6:spi/spi.c     ****  */
+   7:spi/spi.c     **** #include "spi.h"
+   8:spi/spi.c     **** #include "stm32f4xx.h"
+   9:spi/spi.c     **** #define   		DATAGRAM_MAX_LEN 	3
+  10:spi/spi.c     **** uint8_t         SPI_Buffer[DATAGRAM_MAX_LEN]={0xff,0xff,0xff};
+  11:spi/spi.c     **** uint8_t         SPI_index;
+  12:spi/spi.c     **** 
+  13:spi/spi.c     **** 
+  14:spi/spi.c     **** void SPI_StartReceive(void)
+  15:spi/spi.c     **** {
+  29              		.loc 1 15 0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33 0000 70B5     		push	{r4, r5, r6, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 4, -16
+  37              		.cfi_offset 5, -12
+  38              		.cfi_offset 6, -8
+  39              		.cfi_offset 14, -4
+  16:spi/spi.c     **** 	SPI_MODE = SPI_RX_MODE ;
+  40              		.loc 1 16 0
+  41 0002 40F20002 		movw	r2, #:lower16:SPI_MODE
+  17:spi/spi.c     **** 	SPI_index = 0;
+  42              		.loc 1 17 0
+  43 0006 40F20003 		movw	r3, #:lower16:SPI_index
+  18:spi/spi.c     **** 	SPI_Cmd(SPIx, ENABLE);
+  44              		.loc 1 18 0
+  45 000a 4FF46054 		mov	r4, #14336
+  16:spi/spi.c     **** 	SPI_MODE = SPI_RX_MODE ;
+  46              		.loc 1 16 0
+  47 000e 0125     		movs	r5, #1
+  48              		.loc 1 18 0
+  49 0010 C4F20004 		movt	r4, 16384
+  16:spi/spi.c     **** 	SPI_MODE = SPI_RX_MODE ;
+  50              		.loc 1 16 0
+  51 0014 C0F20002 		movt	r2, #:upper16:SPI_MODE
+  17:spi/spi.c     **** 	SPI_index = 0;
+  52              		.loc 1 17 0
+  53 0018 C0F20003 		movt	r3, #:upper16:SPI_index
+  54              		.loc 1 18 0
+  55 001c 2046     		mov	r0, r4
+  56 001e 2946     		mov	r1, r5
+  17:spi/spi.c     **** 	SPI_index = 0;
+  57              		.loc 1 17 0
+  58 0020 0026     		movs	r6, #0
+  16:spi/spi.c     **** 	SPI_MODE = SPI_RX_MODE ;
+  59              		.loc 1 16 0
+  60 0022 1570     		strb	r5, [r2]
+  17:spi/spi.c     **** 	SPI_index = 0;
+  61              		.loc 1 17 0
+  62 0024 1E70     		strb	r6, [r3]
+  63              		.loc 1 18 0
+  64 0026 FFF7FEFF 		bl	SPI_Cmd
+  65              	.LVL0:
+  19:spi/spi.c     **** 	SPI_I2S_ReceiveData(SPIx);
+  66              		.loc 1 19 0
+  67 002a 2046     		mov	r0, r4
+  20:spi/spi.c     **** 	//SPI_I2S_ITConfig(SPI2,SPI_I2S_IT_TXE,DISABLE);
+  21:spi/spi.c     **** }
+  68              		.loc 1 21 0
+  69 002c BDE87040 		pop	{r4, r5, r6, lr}
+  19:spi/spi.c     **** 	SPI_I2S_ReceiveData(SPIx);
+  70              		.loc 1 19 0
+  71 0030 FFF7FEBF 		b	SPI_I2S_ReceiveData
+  72              	.LVL1:
+  73              		.cfi_endproc
+  74              	.LFE123:
+  76              		.section	.text.SPI_Configuration,"ax",%progbits
+  77              		.align	2
+  78              		.global	SPI_Configuration
+  79              		.thumb
+  80              		.thumb_func
+  82              	SPI_Configuration:
+  83              	.LFB124:
+  22:spi/spi.c     **** 
+  23:spi/spi.c     **** void SPI_Configuration(void){
+  84              		.loc 1 23 0
+  85              		.cfi_startproc
+  86              		@ args = 0, pretend = 0, frame = 32
+  87              		@ frame_needed = 0, uses_anonymous_args = 0
+  88 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  89              	.LCFI1:
+  90              		.cfi_def_cfa_offset 20
+  91              		.cfi_offset 4, -20
+  92              		.cfi_offset 5, -16
+  93              		.cfi_offset 6, -12
+  94              		.cfi_offset 7, -8
+  95              		.cfi_offset 14, -4
+  96 0002 89B0     		sub	sp, sp, #36
+  97              	.LCFI2:
+  98              		.cfi_def_cfa_offset 56
+  24:spi/spi.c     **** 
+  25:spi/spi.c     **** 	GPIO_InitTypeDef  GPIO_InitStructure;
+  26:spi/spi.c     **** 	SPI_InitTypeDef SPI_InitStructure;
+  27:spi/spi.c     **** 	NVIC_InitTypeDef  NVIC_InitStructure;
+  28:spi/spi.c     **** 
+  29:spi/spi.c     **** 	NVIC_InitStructure.NVIC_IRQChannel = SPIx_IRQn;
+  99              		.loc 1 29 0
+ 100 0004 08A8     		add	r0, sp, #32
+ 101 0006 2423     		movs	r3, #36
+ 102 0008 C0F20113 		movt	r3, 257
+ 103 000c 40F8203D 		str	r3, [r0, #-32]!
+  30:spi/spi.c     **** 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  31:spi/spi.c     **** 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+  32:spi/spi.c     **** 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  33:spi/spi.c     **** 
+  34:spi/spi.c     **** 	NVIC_Init(&NVIC_InitStructure);
+  35:spi/spi.c     **** 
+  36:spi/spi.c     **** 	/*Enable SPI2 clock*/
+  37:spi/spi.c     **** 	RCC_APB1PeriphClockCmd(SPI_CLK, ENABLE);
+  38:spi/spi.c     **** 
+  39:spi/spi.c     **** 	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
+  40:spi/spi.c     **** 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
+  41:spi/spi.c     **** 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+  42:spi/spi.c     **** 	SPI_InitStructure.SPI_CRCPolynomial = 7;
+  43:spi/spi.c     **** 	SPI_InitStructure.SPI_DataSize =  SPI_DataSize_8b;
+  44:spi/spi.c     **** 	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+  45:spi/spi.c     **** 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
+  46:spi/spi.c     **** 	SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
+  47:spi/spi.c     **** 	SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;
+  48:spi/spi.c     **** 
+  49:spi/spi.c     **** 	SPI_Init(SPIx, &SPI_InitStructure);
+ 104              		.loc 1 49 0
+ 105 0010 4FF46056 		mov	r6, #14336
+  34:spi/spi.c     **** 
+ 106              		.loc 1 34 0
+ 107 0014 6846     		mov	r0, sp
+ 108 0016 FFF7FEFF 		bl	NVIC_Init
+ 109              	.LVL2:
+ 110              		.loc 1 49 0
+ 111 001a C4F20006 		movt	r6, 16384
+  37:spi/spi.c     **** 
+ 112              		.loc 1 37 0
+ 113 001e 4FF48040 		mov	r0, #16384
+ 114 0022 0121     		movs	r1, #1
+ 115 0024 FFF7FEFF 		bl	RCC_APB1PeriphClockCmd
+ 116              	.LVL3:
+  40:spi/spi.c     **** 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+ 117              		.loc 1 40 0
+ 118 0028 0125     		movs	r5, #1
+  41:spi/spi.c     **** 	SPI_InitStructure.SPI_CRCPolynomial = 7;
+ 119              		.loc 1 41 0
+ 120 002a 0023     		movs	r3, #0
+  42:spi/spi.c     **** 	SPI_InitStructure.SPI_DataSize =  SPI_DataSize_8b;
+ 121              		.loc 1 42 0
+ 122 002c 0722     		movs	r2, #7
+ 123              		.loc 1 49 0
+ 124 002e 3046     		mov	r0, r6
+ 125 0030 03A9     		add	r1, sp, #12
+  39:spi/spi.c     **** 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
+ 126              		.loc 1 39 0
+ 127 0032 3827     		movs	r7, #56
+  50:spi/spi.c     **** 	/*Enable GPIOA clock*/
+  51:spi/spi.c     **** 	RCC_AHB1PeriphClockCmd(SPI_PIN_CLK, ENABLE);
+  52:spi/spi.c     **** 
+  53:spi/spi.c     **** 	/* SPI Pin Configuration */
+  54:spi/spi.c     **** 	GPIO_InitStructure.GPIO_Pin = SPI_CS_PIN | SPI_SCK_PIN | SPI_MISO_PIN|SPI_MOSI_PIN;
+  55:spi/spi.c     **** 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+  56:spi/spi.c     **** 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+  57:spi/spi.c     **** 	GPIO_Init(SPI_PIN_PORT, &GPIO_InitStructure);
+ 128              		.loc 1 57 0
+ 129 0034 4FF48064 		mov	r4, #1024
+ 130 0038 C4F20204 		movt	r4, 16386
+  41:spi/spi.c     **** 	SPI_InitStructure.SPI_CRCPolynomial = 7;
+ 131              		.loc 1 41 0
+ 132 003c ADF81230 		strh	r3, [sp, #18]	@ movhi
+  43:spi/spi.c     **** 	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+ 133              		.loc 1 43 0
+ 134 0040 ADF81030 		strh	r3, [sp, #16]	@ movhi
+  44:spi/spi.c     **** 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
+ 135              		.loc 1 44 0
+ 136 0044 ADF80C30 		strh	r3, [sp, #12]	@ movhi
+  45:spi/spi.c     **** 	SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
+ 137              		.loc 1 45 0
+ 138 0048 ADF81A30 		strh	r3, [sp, #26]	@ movhi
+  46:spi/spi.c     **** 	SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;
+ 139              		.loc 1 46 0
+ 140 004c ADF80E30 		strh	r3, [sp, #14]	@ movhi
+  47:spi/spi.c     **** 
+ 141              		.loc 1 47 0
+ 142 0050 ADF81630 		strh	r3, [sp, #22]	@ movhi
+  42:spi/spi.c     **** 	SPI_InitStructure.SPI_DataSize =  SPI_DataSize_8b;
+ 143              		.loc 1 42 0
+ 144 0054 ADF81C20 		strh	r2, [sp, #28]	@ movhi
+  39:spi/spi.c     **** 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
+ 145              		.loc 1 39 0
+ 146 0058 ADF81870 		strh	r7, [sp, #24]	@ movhi
+  40:spi/spi.c     **** 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+ 147              		.loc 1 40 0
+ 148 005c ADF81450 		strh	r5, [sp, #20]	@ movhi
+  49:spi/spi.c     **** 	/*Enable GPIOA clock*/
+ 149              		.loc 1 49 0
+ 150 0060 FFF7FEFF 		bl	SPI_Init
+ 151              	.LVL4:
+  51:spi/spi.c     **** 
+ 152              		.loc 1 51 0
+ 153 0064 2946     		mov	r1, r5
+ 154 0066 0220     		movs	r0, #2
+ 155 0068 FFF7FEFF 		bl	RCC_AHB1PeriphClockCmd
+ 156              	.LVL5:
+  54:spi/spi.c     **** 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+ 157              		.loc 1 54 0
+ 158 006c 4FF47047 		mov	r7, #61440
+  56:spi/spi.c     **** 	GPIO_Init(SPI_PIN_PORT, &GPIO_InitStructure);
+ 159              		.loc 1 56 0
+ 160 0070 0323     		movs	r3, #3
+ 161              		.loc 1 57 0
+ 162 0072 2046     		mov	r0, r4
+  55:spi/spi.c     **** 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+ 163              		.loc 1 55 0
+ 164 0074 0222     		movs	r2, #2
+ 165              		.loc 1 57 0
+ 166 0076 01A9     		add	r1, sp, #4
+  56:spi/spi.c     **** 	GPIO_Init(SPI_PIN_PORT, &GPIO_InitStructure);
+ 167              		.loc 1 56 0
+ 168 0078 8DF80930 		strb	r3, [sp, #9]
+  55:spi/spi.c     **** 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+ 169              		.loc 1 55 0
+ 170 007c 8DF80820 		strb	r2, [sp, #8]
+  54:spi/spi.c     **** 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+ 171              		.loc 1 54 0
+ 172 0080 0197     		str	r7, [sp, #4]
+ 173              		.loc 1 57 0
+ 174 0082 FFF7FEFF 		bl	GPIO_Init
+ 175              	.LVL6:
+  58:spi/spi.c     **** 	/* Alternate function mapping */
+  59:spi/spi.c     **** 	GPIO_PinAFConfig(SPI_PIN_PORT,CS_PinSource,SPIx_AF);
+ 176              		.loc 1 59 0
+ 177 0086 2046     		mov	r0, r4
+ 178 0088 0C21     		movs	r1, #12
+ 179 008a 0522     		movs	r2, #5
+ 180 008c FFF7FEFF 		bl	GPIO_PinAFConfig
+ 181              	.LVL7:
+  60:spi/spi.c     **** 	GPIO_PinAFConfig(SPI_PIN_PORT,SCK_PinSource,SPIx_AF);
+ 182              		.loc 1 60 0
+ 183 0090 2046     		mov	r0, r4
+ 184 0092 0D21     		movs	r1, #13
+ 185 0094 0522     		movs	r2, #5
+ 186 0096 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 187              	.LVL8:
+  61:spi/spi.c     **** 	GPIO_PinAFConfig(SPI_PIN_PORT,MISO_PinSource,SPIx_AF);
+ 188              		.loc 1 61 0
+ 189 009a 2046     		mov	r0, r4
+ 190 009c 0E21     		movs	r1, #14
+ 191 009e 0522     		movs	r2, #5
+ 192 00a0 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 193              	.LVL9:
+  62:spi/spi.c     **** 	GPIO_PinAFConfig(SPI_PIN_PORT,MOSI_PinSource,SPIx_AF);
+ 194              		.loc 1 62 0
+ 195 00a4 2046     		mov	r0, r4
+ 196 00a6 0F21     		movs	r1, #15
+ 197 00a8 0522     		movs	r2, #5
+ 198 00aa FFF7FEFF 		bl	GPIO_PinAFConfig
+ 199              	.LVL10:
+  63:spi/spi.c     **** 	/* Enable RX interrupt*/
+  64:spi/spi.c     **** 	SPI_I2S_ITConfig(SPIx,SPI_I2S_IT_RXNE,ENABLE);
+ 200              		.loc 1 64 0
+ 201 00ae 3046     		mov	r0, r6
+ 202 00b0 2A46     		mov	r2, r5
+ 203 00b2 6021     		movs	r1, #96
+ 204 00b4 FFF7FEFF 		bl	SPI_I2S_ITConfig
+ 205              	.LVL11:
+  65:spi/spi.c     **** 	 /* Enable SPI1 */
+  66:spi/spi.c     **** 	SPI_Cmd(SPIx, ENABLE);
+ 206              		.loc 1 66 0
+ 207 00b8 3046     		mov	r0, r6
+ 208 00ba 2946     		mov	r1, r5
+ 209 00bc FFF7FEFF 		bl	SPI_Cmd
+ 210              	.LVL12:
+  67:spi/spi.c     **** }
+ 211              		.loc 1 67 0
+ 212 00c0 09B0     		add	sp, sp, #36
+ 213              		@ sp needed
+ 214 00c2 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 215              		.cfi_endproc
+ 216              	.LFE124:
+ 218              		.section	.text.SPI2_IRQHandler,"ax",%progbits
+ 219              		.align	2
+ 220              		.global	SPI2_IRQHandler
+ 221              		.thumb
+ 222              		.thumb_func
+ 224              	SPI2_IRQHandler:
+ 225              	.LFB125:
+  68:spi/spi.c     **** void SPIx_IRQHandler (void){
+ 226              		.loc 1 68 0
+ 227              		.cfi_startproc
+ 228              		@ args = 0, pretend = 0, frame = 0
+ 229              		@ frame_needed = 0, uses_anonymous_args = 0
+  69:spi/spi.c     **** 
+  70:spi/spi.c     **** 	if(SPI_I2S_GetITStatus(SPIx,SPI_I2S_IT_TXE)!=RESET)
+ 230              		.loc 1 70 0
+ 231 0000 4FF46050 		mov	r0, #14336
+  68:spi/spi.c     **** void SPIx_IRQHandler (void){
+ 232              		.loc 1 68 0
+ 233 0004 38B5     		push	{r3, r4, r5, lr}
+ 234              	.LCFI3:
+ 235              		.cfi_def_cfa_offset 16
+ 236              		.cfi_offset 3, -16
+ 237              		.cfi_offset 4, -12
+ 238              		.cfi_offset 5, -8
+ 239              		.cfi_offset 14, -4
+ 240              		.loc 1 70 0
+ 241 0006 C4F20000 		movt	r0, 16384
+ 242 000a 7121     		movs	r1, #113
+ 243 000c FFF7FEFF 		bl	SPI_I2S_GetITStatus
+ 244              	.LVL13:
+ 245 0010 98B1     		cbz	r0, .L4
+  71:spi/spi.c     **** 		{
+  72:spi/spi.c     **** #if defined(MASTER)
+  73:spi/spi.c     **** 			CS_SET();
+  74:spi/spi.c     **** #endif
+  75:spi/spi.c     **** 			if(SPI_index< DATAGRAM_MAX_LEN)
+ 246              		.loc 1 75 0
+ 247 0012 40F20003 		movw	r3, #:lower16:SPI_index
+ 248 0016 C0F20003 		movt	r3, #:upper16:SPI_index
+ 249 001a 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 250 001c 022A     		cmp	r2, #2
+ 251 001e 36D8     		bhi	.L5
+  76:spi/spi.c     **** 			{
+  77:spi/spi.c     **** #if defined(MASTER)
+  78:spi/spi.c     **** 				CS_RESET();
+  79:spi/spi.c     **** #endif
+  80:spi/spi.c     **** 				SPI_I2S_SendData(SPIx, SPI_Buffer[SPI_index++]);
+ 252              		.loc 1 80 0
+ 253 0020 40F20001 		movw	r1, #:lower16:.LANCHOR0
+ 254 0024 C0F20001 		movt	r1, #:upper16:.LANCHOR0
+ 255 0028 4FF46050 		mov	r0, #14336
+ 256 002c 895C     		ldrb	r1, [r1, r2]	@ zero_extendqisi2
+ 257 002e C4F20000 		movt	r0, 16384
+ 258 0032 0132     		adds	r2, r2, #1
+ 259 0034 1A70     		strb	r2, [r3]
+ 260 0036 FFF7FEFF 		bl	SPI_I2S_SendData
+ 261              	.LVL14:
+ 262              	.L4:
+  81:spi/spi.c     **** 			}
+  82:spi/spi.c     **** 			else
+  83:spi/spi.c     **** 			{
+  84:spi/spi.c     **** 				SPI_index =0;
+  85:spi/spi.c     **** 				SPI_I2S_ITConfig(SPIx,SPI_I2S_IT_TXE,ENABLE);
+  86:spi/spi.c     **** 
+  87:spi/spi.c     **** 			}
+  88:spi/spi.c     **** 		}
+  89:spi/spi.c     **** 	else
+  90:spi/spi.c     **** 		{
+  91:spi/spi.c     **** 
+  92:spi/spi.c     **** 		}
+  93:spi/spi.c     **** 
+  94:spi/spi.c     **** 	if(SPI_I2S_GetITStatus(SPIx,SPI_I2S_IT_RXNE)!=RESET)
+ 263              		.loc 1 94 0
+ 264 003a 4FF46050 		mov	r0, #14336
+ 265 003e C4F20000 		movt	r0, 16384
+ 266 0042 6021     		movs	r1, #96
+ 267 0044 FFF7FEFF 		bl	SPI_I2S_GetITStatus
+ 268              	.LVL15:
+ 269 0048 00B3     		cbz	r0, .L3
+  95:spi/spi.c     **** 		{
+  96:spi/spi.c     **** 			if(SPI_MODE == SPI_TX_MODE)
+ 270              		.loc 1 96 0
+ 271 004a 40F20003 		movw	r3, #:lower16:SPI_MODE
+ 272 004e C0F20003 		movt	r3, #:upper16:SPI_MODE
+ 273 0052 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 274 0054 ABB3     		cbz	r3, .L13
+  97:spi/spi.c     **** 			{
+  98:spi/spi.c     **** 
+  99:spi/spi.c     **** 				/* Receive a dummy byte to clear the DR register*/
+ 100:spi/spi.c     **** 				SPI_I2S_ReceiveData(SPIx);
+ 101:spi/spi.c     **** 			}
+ 102:spi/spi.c     **** 			else
+ 103:spi/spi.c     **** 			{
+ 104:spi/spi.c     **** 				GPIO_SetBits(GPIOA,GPIO_Pin_5);
+ 105:spi/spi.c     **** 				SPI_Buffer[SPI_index++] = (uint8_t)SPI_I2S_ReceiveData(SPIx);
+ 275              		.loc 1 105 0
+ 276 0056 40F20004 		movw	r4, #:lower16:SPI_index
+ 277 005a C0F20004 		movt	r4, #:upper16:SPI_index
+ 104:spi/spi.c     **** 				SPI_Buffer[SPI_index++] = (uint8_t)SPI_I2S_ReceiveData(SPIx);
+ 278              		.loc 1 104 0
+ 279 005e 0020     		movs	r0, #0
+ 280 0060 C4F20200 		movt	r0, 16386
+ 281 0064 2021     		movs	r1, #32
+ 282 0066 FFF7FEFF 		bl	GPIO_SetBits
+ 283              	.LVL16:
+ 284              		.loc 1 105 0
+ 285 006a 2578     		ldrb	r5, [r4]	@ zero_extendqisi2
+ 286 006c 4FF46050 		mov	r0, #14336
+ 287 0070 6B1C     		adds	r3, r5, #1
+ 288 0072 C4F20000 		movt	r0, 16384
+ 289 0076 2370     		strb	r3, [r4]
+ 290 0078 FFF7FEFF 		bl	SPI_I2S_ReceiveData
+ 291              	.LVL17:
+ 292 007c 40F20003 		movw	r3, #:lower16:.LANCHOR0
+ 106:spi/spi.c     **** 				if(SPI_index >= DATAGRAM_MAX_LEN)
+ 293              		.loc 1 106 0
+ 294 0080 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 105:spi/spi.c     **** 				if(SPI_index >= DATAGRAM_MAX_LEN)
+ 295              		.loc 1 105 0
+ 296 0082 C0F20003 		movt	r3, #:upper16:.LANCHOR0
+ 297              		.loc 1 106 0
+ 298 0086 022A     		cmp	r2, #2
+ 105:spi/spi.c     **** 				if(SPI_index >= DATAGRAM_MAX_LEN)
+ 299              		.loc 1 105 0
+ 300 0088 5855     		strb	r0, [r3, r5]
+ 301              		.loc 1 106 0
+ 302 008a 0BD8     		bhi	.L15
+ 303              	.L3:
+ 304 008c 38BD     		pop	{r3, r4, r5, pc}
+ 305              	.L5:
+  85:spi/spi.c     **** 
+ 306              		.loc 1 85 0
+ 307 008e 4FF46050 		mov	r0, #14336
+  84:spi/spi.c     **** 				SPI_I2S_ITConfig(SPIx,SPI_I2S_IT_TXE,ENABLE);
+ 308              		.loc 1 84 0
+ 309 0092 0024     		movs	r4, #0
+  85:spi/spi.c     **** 
+ 310              		.loc 1 85 0
+ 311 0094 C4F20000 		movt	r0, 16384
+ 312 0098 7121     		movs	r1, #113
+ 313 009a 0122     		movs	r2, #1
+  84:spi/spi.c     **** 				SPI_I2S_ITConfig(SPIx,SPI_I2S_IT_TXE,ENABLE);
+ 314              		.loc 1 84 0
+ 315 009c 1C70     		strb	r4, [r3]
+  85:spi/spi.c     **** 
+ 316              		.loc 1 85 0
+ 317 009e FFF7FEFF 		bl	SPI_I2S_ITConfig
+ 318              	.LVL18:
+ 319 00a2 CAE7     		b	.L4
+ 320              	.L15:
+ 107:spi/spi.c     **** 				{
+ 108:spi/spi.c     **** 					 /* Disable  SPI */
+ 109:spi/spi.c     **** 					SPI_Cmd(SPIx, DISABLE);
+ 321              		.loc 1 109 0
+ 322 00a4 4FF46050 		mov	r0, #14336
+ 323 00a8 C4F20000 		movt	r0, 16384
+ 324 00ac 0021     		movs	r1, #0
+ 325 00ae FFF7FEFF 		bl	SPI_Cmd
+ 326              	.LVL19:
+ 110:spi/spi.c     **** 					SPI_I2S_ITConfig(SPIx, SPI_I2S_IT_TXE, DISABLE);
+ 327              		.loc 1 110 0
+ 328 00b2 4FF46050 		mov	r0, #14336
+ 329 00b6 C4F20000 		movt	r0, 16384
+ 330 00ba 7121     		movs	r1, #113
+ 331 00bc 0022     		movs	r2, #0
+ 332 00be FFF7FEFF 		bl	SPI_I2S_ITConfig
+ 333              	.LVL20:
+ 334              	.L13:
+ 111:spi/spi.c     **** 					SPI_I2S_ReceiveData(SPIx);
+ 335              		.loc 1 111 0
+ 336 00c2 4FF46050 		mov	r0, #14336
+ 337 00c6 C4F20000 		movt	r0, 16384
+ 112:spi/spi.c     **** 					//SPI_index = 0;
+ 113:spi/spi.c     **** 				}
+ 114:spi/spi.c     **** 				//SPI_I2S_ITConfig(SPI2, SPI_I2S_IT_TXE, DISABLE);
+ 115:spi/spi.c     **** 				  // Read dummy byte and empty the register
+ 116:spi/spi.c     **** 				  //SPI_I2S_ReceiveData(SPI2);
+ 117:spi/spi.c     **** 			}
+ 118:spi/spi.c     **** 		}
+ 119:spi/spi.c     **** }
+ 338              		.loc 1 119 0
+ 339 00ca BDE83840 		pop	{r3, r4, r5, lr}
+ 111:spi/spi.c     **** 					SPI_I2S_ReceiveData(SPIx);
+ 340              		.loc 1 111 0
+ 341 00ce FFF7FEBF 		b	SPI_I2S_ReceiveData
+ 342              	.LVL21:
+ 343              		.cfi_endproc
+ 344              	.LFE125:
+ 346 00d2 00BF     		.section	.text.SPI_DataSend,"ax",%progbits
+ 347              		.align	2
+ 348              		.global	SPI_DataSend
+ 349              		.thumb
+ 350              		.thumb_func
+ 352              	SPI_DataSend:
+ 353              	.LFB126:
+ 120:spi/spi.c     **** 
+ 121:spi/spi.c     **** void SPI_DataSend(uint8_t* data)
+ 122:spi/spi.c     **** {
+ 354              		.loc 1 122 0
+ 355              		.cfi_startproc
+ 356              		@ args = 0, pretend = 0, frame = 0
+ 357              		@ frame_needed = 0, uses_anonymous_args = 0
+ 358              	.LVL22:
+ 359 0000 70B5     		push	{r4, r5, r6, lr}
+ 360              	.LCFI4:
+ 361              		.cfi_def_cfa_offset 16
+ 362              		.cfi_offset 4, -16
+ 363              		.cfi_offset 5, -12
+ 364              		.cfi_offset 6, -8
+ 365              		.cfi_offset 14, -4
+ 123:spi/spi.c     **** 
+ 124:spi/spi.c     **** 	SPI_MODE = SPI_TX_MODE ;
+ 366              		.loc 1 124 0
+ 367 0002 40F20002 		movw	r2, #:lower16:SPI_MODE
+ 125:spi/spi.c     **** 	SPI_index = 0;
+ 368              		.loc 1 125 0
+ 369 0006 40F20005 		movw	r5, #:lower16:SPI_index
+ 370 000a C0F20005 		movt	r5, #:upper16:SPI_index
+ 124:spi/spi.c     **** 	SPI_index = 0;
+ 371              		.loc 1 124 0
+ 372 000e C0F20002 		movt	r2, #:upper16:SPI_MODE
+ 373 0012 0021     		movs	r1, #0
+ 374              		.loc 1 125 0
+ 375 0014 2970     		strb	r1, [r5]
+ 124:spi/spi.c     **** 	SPI_index = 0;
+ 376              		.loc 1 124 0
+ 377 0016 1170     		strb	r1, [r2]
+ 126:spi/spi.c     **** 	SPI_Buffer[0] = *data;
+ 378              		.loc 1 126 0
+ 379 0018 40F20004 		movw	r4, #:lower16:.LANCHOR0
+ 380 001c 0278     		ldrb	r2, [r0]	@ zero_extendqisi2
+ 381 001e C0F20004 		movt	r4, #:upper16:.LANCHOR0
+ 122:spi/spi.c     **** 
+ 382              		.loc 1 122 0
+ 383 0022 0346     		mov	r3, r0
+ 384              		.loc 1 126 0
+ 385 0024 2270     		strb	r2, [r4]
+ 127:spi/spi.c     **** 	SPI_Buffer[1] = *(data+1);
+ 386              		.loc 1 127 0
+ 387 0026 5A78     		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 388 0028 6270     		strb	r2, [r4, #1]
+ 128:spi/spi.c     **** 	SPI_Buffer[2] = *(data+2);
+ 389              		.loc 1 128 0
+ 390 002a 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 129:spi/spi.c     **** 
+ 130:spi/spi.c     **** 	GPIO_ResetBits(GPIOB,GPIO_Pin_12);
+ 391              		.loc 1 130 0
+ 392 002c 4FF48060 		mov	r0, #1024
+ 393              	.LVL23:
+ 394 0030 C4F20200 		movt	r0, 16386
+ 395 0034 4FF48051 		mov	r1, #4096
+ 128:spi/spi.c     **** 	SPI_Buffer[2] = *(data+2);
+ 396              		.loc 1 128 0
+ 397 0038 A370     		strb	r3, [r4, #2]
+ 131:spi/spi.c     **** 	/* Send byte through the PLM SPI peripheral */
+ 132:spi/spi.c     **** 	SPI_I2S_SendData(SPIx, SPI_Buffer[SPI_index++]);
+ 398              		.loc 1 132 0
+ 399 003a 4FF46056 		mov	r6, #14336
+ 130:spi/spi.c     **** 	/* Send byte through the PLM SPI peripheral */
+ 400              		.loc 1 130 0
+ 401 003e FFF7FEFF 		bl	GPIO_ResetBits
+ 402              	.LVL24:
+ 403              		.loc 1 132 0
+ 404 0042 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 405 0044 C4F20006 		movt	r6, 16384
+ 406 0048 E15C     		ldrb	r1, [r4, r3]	@ zero_extendqisi2
+ 407 004a 3046     		mov	r0, r6
+ 408 004c 0133     		adds	r3, r3, #1
+ 409 004e 2B70     		strb	r3, [r5]
+ 410 0050 FFF7FEFF 		bl	SPI_I2S_SendData
+ 411              	.LVL25:
+ 133:spi/spi.c     **** 
+ 134:spi/spi.c     **** 	SPI_Cmd(SPIx, ENABLE);
+ 412              		.loc 1 134 0
+ 413 0054 3046     		mov	r0, r6
+ 414 0056 0121     		movs	r1, #1
+ 415 0058 FFF7FEFF 		bl	SPI_Cmd
+ 416              	.LVL26:
+ 135:spi/spi.c     **** 
+ 136:spi/spi.c     **** 	SPI_I2S_ITConfig(SPIx, SPI_I2S_IT_TXE , ENABLE);
+ 417              		.loc 1 136 0
+ 418 005c 3046     		mov	r0, r6
+ 419 005e 7121     		movs	r1, #113
+ 420 0060 0122     		movs	r2, #1
+ 137:spi/spi.c     **** 
+ 138:spi/spi.c     **** }
+ 421              		.loc 1 138 0
+ 422 0062 BDE87040 		pop	{r4, r5, r6, lr}
+ 136:spi/spi.c     **** 
+ 423              		.loc 1 136 0
+ 424 0066 FFF7FEBF 		b	SPI_I2S_ITConfig
+ 425              	.LVL27:
+ 426              		.cfi_endproc
+ 427              	.LFE126:
+ 429              		.comm	SPI_index,1,1
+ 430              		.global	SPI_Buffer
+ 431              		.comm	SPI_MODE,1,1
+ 432 006a 00BF     		.section	.data.SPI_Buffer,"aw",%progbits
+ 433              		.align	2
+ 434              		.set	.LANCHOR0,. + 0
+ 437              	SPI_Buffer:
+ 438 0000 FF       		.byte	-1
+ 439 0001 FF       		.byte	-1
+ 440 0002 FF       		.byte	-1
+ 441 0003 00       		.text
+ 442              	.Letext0:
+ 443              		.file 2 "/opt/toolchains/eabi/arm-2014.05/arm-none-eabi/include/stdint.h"
+ 444              		.file 3 "inc/stm32f4xx.h"
+ 445              		.file 4 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_gpio.h"
+ 446              		.file 5 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_spi.h"
+ 447              		.file 6 "Libraries/STM32F4xx_StdPeriph_Driver/inc/misc.h"
+ 448              		.file 7 "spi/spi.h"
+ 449              		.file 8 "Libraries/CMSIS/Include/core_cm4.h"
+ 450              		.file 9 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_rcc.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 spi.c
+     /tmp/cc5aHrQC.s:21     .text.SPI_StartReceive:00000000 $t
+     /tmp/cc5aHrQC.s:26     .text.SPI_StartReceive:00000000 SPI_StartReceive
+                            *COM*:00000001 SPI_MODE
+                            *COM*:00000001 SPI_index
+     /tmp/cc5aHrQC.s:77     .text.SPI_Configuration:00000000 $t
+     /tmp/cc5aHrQC.s:82     .text.SPI_Configuration:00000000 SPI_Configuration
+     /tmp/cc5aHrQC.s:219    .text.SPI2_IRQHandler:00000000 $t
+     /tmp/cc5aHrQC.s:224    .text.SPI2_IRQHandler:00000000 SPI2_IRQHandler
+     /tmp/cc5aHrQC.s:434    .data.SPI_Buffer:00000000 .LANCHOR0
+     /tmp/cc5aHrQC.s:347    .text.SPI_DataSend:00000000 $t
+     /tmp/cc5aHrQC.s:352    .text.SPI_DataSend:00000000 SPI_DataSend
+     /tmp/cc5aHrQC.s:437    .data.SPI_Buffer:00000000 SPI_Buffer
+     /tmp/cc5aHrQC.s:433    .data.SPI_Buffer:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+SPI_Cmd
+SPI_I2S_ReceiveData
+NVIC_Init
+RCC_APB1PeriphClockCmd
+SPI_Init
+RCC_AHB1PeriphClockCmd
+GPIO_Init
+GPIO_PinAFConfig
+SPI_I2S_ITConfig
+SPI_I2S_GetITStatus
+SPI_I2S_SendData
+GPIO_SetBits
+GPIO_ResetBits

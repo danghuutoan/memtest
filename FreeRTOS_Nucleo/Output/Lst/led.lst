@@ -1,0 +1,177 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.eabi_attribute 27, 3
+   4              		.eabi_attribute 28, 1
+   5              		.fpu fpv4-sp-d16
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 2
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.thumb
+  16              		.file	"led.c"
+  17              		.text
+  18              	.Ltext0:
+  19              		.cfi_sections	.debug_frame
+  20              		.section	.text.LED_Init,"ax",%progbits
+  21              		.align	2
+  22              		.global	LED_Init
+  23              		.thumb
+  24              		.thumb_func
+  26              	LED_Init:
+  27              	.LFB123:
+  28              		.file 1 "led/led.c"
+   1:led/led.c     **** #include "led.h"
+   2:led/led.c     **** 
+   3:led/led.c     **** void LED_Init(void)
+   4:led/led.c     **** {
+  29              		.loc 1 4 0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33 0000 30B5     		push	{r4, r5, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 12
+  36              		.cfi_offset 4, -12
+  37              		.cfi_offset 5, -8
+  38              		.cfi_offset 14, -4
+   5:led/led.c     **** 	GPIO_InitTypeDef  GPIO_InitStructure;
+   6:led/led.c     **** 
+   7:led/led.c     **** 	 /* GPIOD Periph clock enable */
+   8:led/led.c     **** 	  RCC_AHB1PeriphClockCmd(LED_RCC_Clk, ENABLE);
+  39              		.loc 1 8 0
+  40 0002 0120     		movs	r0, #1
+   4:led/led.c     **** 	 /* GPIOD Periph clock enable */
+  41              		.loc 1 4 0
+  42 0004 83B0     		sub	sp, sp, #12
+  43              	.LCFI1:
+  44              		.cfi_def_cfa_offset 24
+  45              		.loc 1 8 0
+  46 0006 0146     		mov	r1, r0
+  47 0008 FFF7FEFF 		bl	RCC_AHB1PeriphClockCmd
+  48              	.LVL0:
+   9:led/led.c     **** 
+  10:led/led.c     **** 	  /* Configure PD12, PD13, PD14 and PD15 in output pushpull mode */
+  11:led/led.c     **** 	  GPIO_InitStructure.GPIO_Pin = LED_Pin;
+  12:led/led.c     **** 	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  13:led/led.c     **** 	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  14:led/led.c     **** 	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+  15:led/led.c     **** 	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  16:led/led.c     **** 	  GPIO_Init(LED_Port, &GPIO_InitStructure);
+  49              		.loc 1 16 0
+  50 000c 0020     		movs	r0, #0
+  13:led/led.c     **** 	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+  51              		.loc 1 13 0
+  52 000e 0023     		movs	r3, #0
+  14:led/led.c     **** 	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  53              		.loc 1 14 0
+  54 0010 0322     		movs	r2, #3
+  55              		.loc 1 16 0
+  56 0012 C4F20200 		movt	r0, 16386
+  11:led/led.c     **** 	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  57              		.loc 1 11 0
+  58 0016 2025     		movs	r5, #32
+  12:led/led.c     **** 	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  59              		.loc 1 12 0
+  60 0018 0124     		movs	r4, #1
+  61              		.loc 1 16 0
+  62 001a 6946     		mov	r1, sp
+  11:led/led.c     **** 	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  63              		.loc 1 11 0
+  64 001c 0095     		str	r5, [sp]
+  12:led/led.c     **** 	  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  65              		.loc 1 12 0
+  66 001e 8DF80440 		strb	r4, [sp, #4]
+  13:led/led.c     **** 	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+  67              		.loc 1 13 0
+  68 0022 8DF80630 		strb	r3, [sp, #6]
+  15:led/led.c     **** 	  GPIO_Init(LED_Port, &GPIO_InitStructure);
+  69              		.loc 1 15 0
+  70 0026 8DF80730 		strb	r3, [sp, #7]
+  14:led/led.c     **** 	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  71              		.loc 1 14 0
+  72 002a 8DF80520 		strb	r2, [sp, #5]
+  73              		.loc 1 16 0
+  74 002e FFF7FEFF 		bl	GPIO_Init
+  75              	.LVL1:
+  17:led/led.c     **** }
+  76              		.loc 1 17 0
+  77 0032 03B0     		add	sp, sp, #12
+  78              		@ sp needed
+  79 0034 30BD     		pop	{r4, r5, pc}
+  80              		.cfi_endproc
+  81              	.LFE123:
+  83 0036 00BF     		.section	.text.LED_On,"ax",%progbits
+  84              		.align	2
+  85              		.global	LED_On
+  86              		.thumb
+  87              		.thumb_func
+  89              	LED_On:
+  90              	.LFB124:
+  18:led/led.c     **** 
+  19:led/led.c     **** void LED_On(void)
+  20:led/led.c     **** {
+  91              		.loc 1 20 0
+  92              		.cfi_startproc
+  93              		@ args = 0, pretend = 0, frame = 0
+  94              		@ frame_needed = 0, uses_anonymous_args = 0
+  95              		@ link register save eliminated.
+  21:led/led.c     **** 	GPIO_SetBits(LED_Port, LED_Pin);
+  96              		.loc 1 21 0
+  97 0000 0020     		movs	r0, #0
+  98 0002 C4F20200 		movt	r0, 16386
+  99 0006 2021     		movs	r1, #32
+ 100 0008 FFF7FEBF 		b	GPIO_SetBits
+ 101              	.LVL2:
+ 102              		.cfi_endproc
+ 103              	.LFE124:
+ 105              		.section	.text.LED_Off,"ax",%progbits
+ 106              		.align	2
+ 107              		.global	LED_Off
+ 108              		.thumb
+ 109              		.thumb_func
+ 111              	LED_Off:
+ 112              	.LFB125:
+  22:led/led.c     **** }
+  23:led/led.c     **** void LED_Off(void)
+  24:led/led.c     **** {
+ 113              		.loc 1 24 0
+ 114              		.cfi_startproc
+ 115              		@ args = 0, pretend = 0, frame = 0
+ 116              		@ frame_needed = 0, uses_anonymous_args = 0
+ 117              		@ link register save eliminated.
+  25:led/led.c     **** 	GPIO_ResetBits(LED_Port, LED_Pin);
+ 118              		.loc 1 25 0
+ 119 0000 0020     		movs	r0, #0
+ 120 0002 C4F20200 		movt	r0, 16386
+ 121 0006 2021     		movs	r1, #32
+ 122 0008 FFF7FEBF 		b	GPIO_ResetBits
+ 123              	.LVL3:
+ 124              		.cfi_endproc
+ 125              	.LFE125:
+ 127              		.text
+ 128              	.Letext0:
+ 129              		.file 2 "/opt/toolchains/eabi/arm-2014.05/arm-none-eabi/include/stdint.h"
+ 130              		.file 3 "inc/stm32f4xx.h"
+ 131              		.file 4 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_gpio.h"
+ 132              		.file 5 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_rcc.h"
+ 133              		.file 6 "Libraries/CMSIS/Include/core_cm4.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 led.c
+     /tmp/ccm7Chkx.s:21     .text.LED_Init:00000000 $t
+     /tmp/ccm7Chkx.s:26     .text.LED_Init:00000000 LED_Init
+     /tmp/ccm7Chkx.s:84     .text.LED_On:00000000 $t
+     /tmp/ccm7Chkx.s:89     .text.LED_On:00000000 LED_On
+     /tmp/ccm7Chkx.s:106    .text.LED_Off:00000000 $t
+     /tmp/ccm7Chkx.s:111    .text.LED_Off:00000000 LED_Off
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+RCC_AHB1PeriphClockCmd
+GPIO_Init
+GPIO_SetBits
+GPIO_ResetBits

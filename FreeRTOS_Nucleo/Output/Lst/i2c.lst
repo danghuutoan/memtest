@@ -1,0 +1,1668 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.eabi_attribute 27, 3
+   4              		.eabi_attribute 28, 1
+   5              		.fpu fpv4-sp-d16
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 2
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.thumb
+  16              		.file	"i2c.c"
+  17              		.text
+  18              	.Ltext0:
+  19              		.cfi_sections	.debug_frame
+  20              		.section	.text.I2C_GetTxFlag,"ax",%progbits
+  21              		.align	2
+  22              		.global	I2C_GetTxFlag
+  23              		.thumb
+  24              		.thumb_func
+  26              	I2C_GetTxFlag:
+  27              	.LFB123:
+  28              		.file 1 "i2c/i2c.c"
+   1:i2c/i2c.c     **** /*
+   2:i2c/i2c.c     ****  * i2c.c
+   3:i2c/i2c.c     ****  *
+   4:i2c/i2c.c     ****  *  Created on: Apr 3, 2015
+   5:i2c/i2c.c     ****  *      Author: toandang
+   6:i2c/i2c.c     ****  */
+   7:i2c/i2c.c     **** #include "i2c.h"
+   8:i2c/i2c.c     **** 
+   9:i2c/i2c.c     **** volatile uint32_t Event = 0;
+  10:i2c/i2c.c     **** uint8_t index;
+  11:i2c/i2c.c     **** uint8_t mode;
+  12:i2c/i2c.c     **** uint8_t len;
+  13:i2c/i2c.c     **** uint8_t byte2Read;
+  14:i2c/i2c.c     **** volatile uint8_t MasterTxBuffer[3];
+  15:i2c/i2c.c     **** volatile uint8_t RX_Buffer[100];
+  16:i2c/i2c.c     **** FlagStatus TX_OK;
+  17:i2c/i2c.c     **** FlagStatus RxComplete_f = RESET;
+  18:i2c/i2c.c     **** FlagStatus TxComplete_f = RESET;
+  19:i2c/i2c.c     **** I2C_buffer buffer;
+  20:i2c/i2c.c     **** int n =0;
+  21:i2c/i2c.c     **** FlagStatus I2C_GetTxFlag(void)
+  22:i2c/i2c.c     **** {
+  29              		.loc 1 22 0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  23:i2c/i2c.c     ****   return TxComplete_f;
+  34              		.loc 1 23 0
+  35 0000 40F20003 		movw	r3, #:lower16:.LANCHOR0
+  36 0004 C0F20003 		movt	r3, #:upper16:.LANCHOR0
+  24:i2c/i2c.c     **** }
+  37              		.loc 1 24 0
+  38 0008 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+  39 000a 7047     		bx	lr
+  40              		.cfi_endproc
+  41              	.LFE123:
+  43              		.section	.text.I2C_GetRxFlag,"ax",%progbits
+  44              		.align	2
+  45              		.global	I2C_GetRxFlag
+  46              		.thumb
+  47              		.thumb_func
+  49              	I2C_GetRxFlag:
+  50              	.LFB124:
+  25:i2c/i2c.c     **** FlagStatus I2C_GetRxFlag(void)
+  26:i2c/i2c.c     **** {
+  51              		.loc 1 26 0
+  52              		.cfi_startproc
+  53              		@ args = 0, pretend = 0, frame = 0
+  54              		@ frame_needed = 0, uses_anonymous_args = 0
+  55              		@ link register save eliminated.
+  27:i2c/i2c.c     ****   return RxComplete_f;
+  56              		.loc 1 27 0
+  57 0000 40F20003 		movw	r3, #:lower16:.LANCHOR1
+  58 0004 C0F20003 		movt	r3, #:upper16:.LANCHOR1
+  28:i2c/i2c.c     **** }
+  59              		.loc 1 28 0
+  60 0008 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+  61 000a 7047     		bx	lr
+  62              		.cfi_endproc
+  63              	.LFE124:
+  65              		.section	.text.I2C_StopReceived,"ax",%progbits
+  66              		.align	2
+  67              		.global	I2C_StopReceived
+  68              		.thumb
+  69              		.thumb_func
+  71              	I2C_StopReceived:
+  72              	.LFB125:
+  29:i2c/i2c.c     **** void I2C_StopReceived(void)
+  30:i2c/i2c.c     **** {
+  73              		.loc 1 30 0
+  74              		.cfi_startproc
+  75              		@ args = 0, pretend = 0, frame = 0
+  76              		@ frame_needed = 0, uses_anonymous_args = 0
+  77              		@ link register save eliminated.
+  31:i2c/i2c.c     **** 	index = 0;
+  78              		.loc 1 31 0
+  79 0000 40F20002 		movw	r2, #:lower16:index
+  32:i2c/i2c.c     **** 	RxComplete_f = SET;
+  80              		.loc 1 32 0
+  81 0004 40F20003 		movw	r3, #:lower16:.LANCHOR1
+  31:i2c/i2c.c     **** 	index = 0;
+  82              		.loc 1 31 0
+  83 0008 C0F20002 		movt	r2, #:upper16:index
+  84              		.loc 1 32 0
+  85 000c C0F20003 		movt	r3, #:upper16:.LANCHOR1
+  31:i2c/i2c.c     **** 	index = 0;
+  86              		.loc 1 31 0
+  87 0010 0020     		movs	r0, #0
+  88              		.loc 1 32 0
+  89 0012 0121     		movs	r1, #1
+  31:i2c/i2c.c     **** 	index = 0;
+  90              		.loc 1 31 0
+  91 0014 1070     		strb	r0, [r2]
+  92              		.loc 1 32 0
+  93 0016 1970     		strb	r1, [r3]
+  94 0018 7047     		bx	lr
+  95              		.cfi_endproc
+  96              	.LFE125:
+  98 001a 00BF     		.section	.text.I2C_GetBuffer,"ax",%progbits
+  99              		.align	2
+ 100              		.global	I2C_GetBuffer
+ 101              		.thumb
+ 102              		.thumb_func
+ 104              	I2C_GetBuffer:
+ 105              	.LFB126:
+  33:i2c/i2c.c     **** }
+  34:i2c/i2c.c     **** I2C_buffer* I2C_GetBuffer(void)
+  35:i2c/i2c.c     **** {
+ 106              		.loc 1 35 0
+ 107              		.cfi_startproc
+ 108              		@ args = 0, pretend = 0, frame = 0
+ 109              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110              		@ link register save eliminated.
+ 111              	.LVL0:
+  36:i2c/i2c.c     **** 	I2C_buffer* p;
+  37:i2c/i2c.c     **** 	p = &buffer;
+  38:i2c/i2c.c     **** 	return p;
+  39:i2c/i2c.c     **** }
+ 112              		.loc 1 39 0
+ 113 0000 40F20000 		movw	r0, #:lower16:buffer
+ 114 0004 C0F20000 		movt	r0, #:upper16:buffer
+ 115 0008 7047     		bx	lr
+ 116              		.cfi_endproc
+ 117              	.LFE126:
+ 119 000a 00BF     		.section	.text.I2C_StartTx,"ax",%progbits
+ 120              		.align	2
+ 121              		.global	I2C_StartTx
+ 122              		.thumb
+ 123              		.thumb_func
+ 125              	I2C_StartTx:
+ 126              	.LFB127:
+  40:i2c/i2c.c     **** void I2C_StartTx(void)
+  41:i2c/i2c.c     **** {
+ 127              		.loc 1 41 0
+ 128              		.cfi_startproc
+ 129              		@ args = 0, pretend = 0, frame = 0
+ 130              		@ frame_needed = 0, uses_anonymous_args = 0
+ 131              		@ link register save eliminated.
+ 132 0000 30B4     		push	{r4, r5}
+ 133              	.LCFI0:
+ 134              		.cfi_def_cfa_offset 8
+ 135              		.cfi_offset 4, -8
+ 136              		.cfi_offset 5, -4
+  42:i2c/i2c.c     **** 
+  43:i2c/i2c.c     ****   TxComplete_f = RESET;
+  44:i2c/i2c.c     ****   index =0;
+  45:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 137              		.loc 1 45 0
+ 138 0002 40F20003 		movw	r3, #:lower16:mode
+  43:i2c/i2c.c     ****   index =0;
+ 139              		.loc 1 43 0
+ 140 0006 40F20005 		movw	r5, #:lower16:.LANCHOR0
+  44:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 141              		.loc 1 44 0
+ 142 000a 40F20004 		movw	r4, #:lower16:index
+ 143              		.loc 1 45 0
+ 144 000e C0F20003 		movt	r3, #:upper16:mode
+  43:i2c/i2c.c     ****   index =0;
+ 145              		.loc 1 43 0
+ 146 0012 0022     		movs	r2, #0
+ 147 0014 C0F20005 		movt	r5, #:upper16:.LANCHOR0
+  44:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 148              		.loc 1 44 0
+ 149 0018 C0F20004 		movt	r4, #:upper16:index
+  46:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 150              		.loc 1 46 0
+ 151 001c 4FF4A840 		mov	r0, #21504
+  45:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 152              		.loc 1 45 0
+ 153 0020 1A70     		strb	r2, [r3]
+  43:i2c/i2c.c     ****   index =0;
+ 154              		.loc 1 43 0
+ 155 0022 2A70     		strb	r2, [r5]
+  44:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 156              		.loc 1 44 0
+ 157 0024 2270     		strb	r2, [r4]
+ 158              		.loc 1 46 0
+ 159 0026 C4F20000 		movt	r0, 16384
+ 160 002a 0121     		movs	r1, #1
+  47:i2c/i2c.c     **** }
+ 161              		.loc 1 47 0
+ 162 002c 30BC     		pop	{r4, r5}
+  46:i2c/i2c.c     **** }
+ 163              		.loc 1 46 0
+ 164 002e FFF7FEBF 		b	I2C_Cmd
+ 165              	.LVL1:
+ 166              		.cfi_endproc
+ 167              	.LFE127:
+ 169 0032 00BF     		.section	.text.I2C_StartRx,"ax",%progbits
+ 170              		.align	2
+ 171              		.global	I2C_StartRx
+ 172              		.thumb
+ 173              		.thumb_func
+ 175              	I2C_StartRx:
+ 176              	.LFB128:
+  48:i2c/i2c.c     **** void I2C_StartRx(uint8_t leng)
+  49:i2c/i2c.c     **** {
+ 177              		.loc 1 49 0
+ 178              		.cfi_startproc
+ 179              		@ args = 0, pretend = 0, frame = 0
+ 180              		@ frame_needed = 0, uses_anonymous_args = 0
+ 181              		@ link register save eliminated.
+ 182              	.LVL2:
+ 183 0000 70B4     		push	{r4, r5, r6}
+ 184              	.LCFI1:
+ 185              		.cfi_def_cfa_offset 12
+ 186              		.cfi_offset 4, -12
+ 187              		.cfi_offset 5, -8
+ 188              		.cfi_offset 6, -4
+  50:i2c/i2c.c     ****   RxComplete_f = RESET;
+  51:i2c/i2c.c     ****   index =0;
+  52:i2c/i2c.c     ****   mode = I2C_Direction_Receiver;
+  53:i2c/i2c.c     ****   len = leng;
+ 189              		.loc 1 53 0
+ 190 0002 40F20001 		movw	r1, #:lower16:len
+  51:i2c/i2c.c     ****   mode = I2C_Direction_Receiver;
+ 191              		.loc 1 51 0
+ 192 0006 40F20002 		movw	r2, #:lower16:index
+  52:i2c/i2c.c     ****   len = leng;
+ 193              		.loc 1 52 0
+ 194 000a 40F20003 		movw	r3, #:lower16:mode
+ 195              		.loc 1 53 0
+ 196 000e C0F20001 		movt	r1, #:upper16:len
+  50:i2c/i2c.c     ****   RxComplete_f = RESET;
+ 197              		.loc 1 50 0
+ 198 0012 40F20004 		movw	r4, #:lower16:.LANCHOR1
+  51:i2c/i2c.c     ****   mode = I2C_Direction_Receiver;
+ 199              		.loc 1 51 0
+ 200 0016 C0F20002 		movt	r2, #:upper16:index
+  52:i2c/i2c.c     ****   len = leng;
+ 201              		.loc 1 52 0
+ 202 001a C0F20003 		movt	r3, #:upper16:mode
+ 203 001e 0125     		movs	r5, #1
+  50:i2c/i2c.c     ****   RxComplete_f = RESET;
+ 204              		.loc 1 50 0
+ 205 0020 0026     		movs	r6, #0
+ 206 0022 C0F20004 		movt	r4, #:upper16:.LANCHOR1
+ 207              		.loc 1 53 0
+ 208 0026 0870     		strb	r0, [r1]
+  51:i2c/i2c.c     ****   mode = I2C_Direction_Receiver;
+ 209              		.loc 1 51 0
+ 210 0028 1670     		strb	r6, [r2]
+  54:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 211              		.loc 1 54 0
+ 212 002a 4FF4A840 		mov	r0, #21504
+ 213              	.LVL3:
+  52:i2c/i2c.c     ****   len = leng;
+ 214              		.loc 1 52 0
+ 215 002e 1D70     		strb	r5, [r3]
+ 216              		.loc 1 54 0
+ 217 0030 2946     		mov	r1, r5
+  50:i2c/i2c.c     ****   index =0;
+ 218              		.loc 1 50 0
+ 219 0032 2670     		strb	r6, [r4]
+ 220              		.loc 1 54 0
+ 221 0034 C4F20000 		movt	r0, 16384
+  55:i2c/i2c.c     **** }
+ 222              		.loc 1 55 0
+ 223 0038 70BC     		pop	{r4, r5, r6}
+  54:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 224              		.loc 1 54 0
+ 225 003a FFF7FEBF 		b	I2C_Cmd
+ 226              	.LVL4:
+ 227              		.cfi_endproc
+ 228              	.LFE128:
+ 230 003e 00BF     		.section	.text.I2C_Configuration,"ax",%progbits
+ 231              		.align	2
+ 232              		.global	I2C_Configuration
+ 233              		.thumb
+ 234              		.thumb_func
+ 236              	I2C_Configuration:
+ 237              	.LFB129:
+  56:i2c/i2c.c     **** void I2C_Configuration(void)
+  57:i2c/i2c.c     **** {
+ 238              		.loc 1 57 0
+ 239              		.cfi_startproc
+ 240              		@ args = 0, pretend = 0, frame = 32
+ 241              		@ frame_needed = 0, uses_anonymous_args = 0
+ 242 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 243              	.LCFI2:
+ 244              		.cfi_def_cfa_offset 20
+ 245              		.cfi_offset 4, -20
+ 246              		.cfi_offset 5, -16
+ 247              		.cfi_offset 6, -12
+ 248              		.cfi_offset 7, -8
+ 249              		.cfi_offset 14, -4
+  58:i2c/i2c.c     **** 	GPIO_InitTypeDef GPIO_I2C_InitStruct;
+  59:i2c/i2c.c     **** 			NVIC_InitTypeDef NVIC_InitStruct;
+  60:i2c/i2c.c     **** 			I2C_InitTypeDef I2C_InitStruct;
+  61:i2c/i2c.c     **** 
+  62:i2c/i2c.c     **** 
+  63:i2c/i2c.c     **** 			/* RCC Configuration */
+  64:i2c/i2c.c     **** 			RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
+ 250              		.loc 1 64 0
+ 251 0002 4FF40010 		mov	r0, #2097152
+  57:i2c/i2c.c     **** 	GPIO_InitTypeDef GPIO_I2C_InitStruct;
+ 252              		.loc 1 57 0
+ 253 0006 89B0     		sub	sp, sp, #36
+ 254              	.LCFI3:
+ 255              		.cfi_def_cfa_offset 56
+ 256              		.loc 1 64 0
+ 257 0008 0121     		movs	r1, #1
+ 258 000a FFF7FEFF 		bl	RCC_APB1PeriphClockCmd
+ 259              	.LVL5:
+  65:i2c/i2c.c     **** 
+  66:i2c/i2c.c     **** 			/*SDA GPIO clock enable */
+  67:i2c/i2c.c     **** 			RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+ 260              		.loc 1 67 0
+ 261 000e 0220     		movs	r0, #2
+ 262 0010 0121     		movs	r1, #1
+ 263 0012 FFF7FEFF 		bl	RCC_AHB1PeriphClockCmd
+ 264              	.LVL6:
+  68:i2c/i2c.c     **** 
+  69:i2c/i2c.c     **** 			/*SCL GPIO clock enable */
+  70:i2c/i2c.c     **** 			RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+ 265              		.loc 1 70 0
+ 266 0016 0220     		movs	r0, #2
+ 267 0018 0121     		movs	r1, #1
+ 268 001a FFF7FEFF 		bl	RCC_AHB1PeriphClockCmd
+ 269              	.LVL7:
+  71:i2c/i2c.c     **** 
+  72:i2c/i2c.c     **** 			/* Reset I2C3 IP */
+  73:i2c/i2c.c     **** 			RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, ENABLE);
+  74:i2c/i2c.c     **** 
+  75:i2c/i2c.c     **** 			/* Release reset signal of I2Cx IP */
+  76:i2c/i2c.c     **** 			RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, DISABLE);
+  77:i2c/i2c.c     **** 
+  78:i2c/i2c.c     **** 			/* GPIO Configuration */
+  79:i2c/i2c.c     **** 			/*Configure I2C SCL pin */
+  80:i2c/i2c.c     **** 			/* Set default I2C GPIO	settings */
+  81:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_Pin = GPIO_Pin_8;
+  82:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_Mode = GPIO_Mode_AF;
+  83:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_OType = GPIO_OType_OD;
+  84:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
+  85:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+  86:i2c/i2c.c     **** 			/* Init pins */
+  87:i2c/i2c.c     **** 			GPIO_Init(GPIOB, &GPIO_I2C_InitStruct);
+ 270              		.loc 1 87 0
+ 271 001e 4FF48064 		mov	r4, #1024
+  73:i2c/i2c.c     **** 
+ 272              		.loc 1 73 0
+ 273 0022 4FF40010 		mov	r0, #2097152
+ 274 0026 0121     		movs	r1, #1
+ 275 0028 FFF7FEFF 		bl	RCC_APB1PeriphResetCmd
+ 276              	.LVL8:
+ 277              		.loc 1 87 0
+ 278 002c C4F20204 		movt	r4, 16386
+  76:i2c/i2c.c     **** 
+ 279              		.loc 1 76 0
+ 280 0030 4FF40010 		mov	r0, #2097152
+ 281 0034 0021     		movs	r1, #0
+ 282 0036 FFF7FEFF 		bl	RCC_APB1PeriphResetCmd
+ 283              	.LVL9:
+  83:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
+ 284              		.loc 1 83 0
+ 285 003a 0125     		movs	r5, #1
+  81:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_Mode = GPIO_Mode_AF;
+ 286              		.loc 1 81 0
+ 287 003c 4FF48072 		mov	r2, #256
+  82:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_OType = GPIO_OType_OD;
+ 288              		.loc 1 82 0
+ 289 0040 0223     		movs	r3, #2
+ 290              		.loc 1 87 0
+ 291 0042 2046     		mov	r0, r4
+ 292 0044 02A9     		add	r1, sp, #8
+  81:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_Mode = GPIO_Mode_AF;
+ 293              		.loc 1 81 0
+ 294 0046 0292     		str	r2, [sp, #8]
+  82:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_OType = GPIO_OType_OD;
+ 295              		.loc 1 82 0
+ 296 0048 8DF80C30 		strb	r3, [sp, #12]
+  85:i2c/i2c.c     **** 			/* Init pins */
+ 297              		.loc 1 85 0
+ 298 004c 8DF80D30 		strb	r3, [sp, #13]
+  83:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
+ 299              		.loc 1 83 0
+ 300 0050 8DF80E50 		strb	r5, [sp, #14]
+  84:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+ 301              		.loc 1 84 0
+ 302 0054 8DF80F50 		strb	r5, [sp, #15]
+ 303              		.loc 1 87 0
+ 304 0058 FFF7FEFF 		bl	GPIO_Init
+ 305              	.LVL10:
+  88:i2c/i2c.c     **** 			/*Configure I2C SDA pin */
+  89:i2c/i2c.c     **** 			GPIO_I2C_InitStruct.GPIO_Pin = GPIO_Pin_9;
+ 306              		.loc 1 89 0
+ 307 005c 4FF40073 		mov	r3, #512
+  90:i2c/i2c.c     **** 			/* Init pins */
+  91:i2c/i2c.c     **** 			GPIO_Init(GPIOB, &GPIO_I2C_InitStruct);
+ 308              		.loc 1 91 0
+ 309 0060 02A9     		add	r1, sp, #8
+ 310 0062 2046     		mov	r0, r4
+  89:i2c/i2c.c     **** 			/* Init pins */
+ 311              		.loc 1 89 0
+ 312 0064 0293     		str	r3, [sp, #8]
+ 313              		.loc 1 91 0
+ 314 0066 FFF7FEFF 		bl	GPIO_Init
+ 315              	.LVL11:
+  92:i2c/i2c.c     **** 
+  93:i2c/i2c.c     **** 			/* Connect PB6 to I2C_SCL */
+  94:i2c/i2c.c     **** 			GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_I2C1);
+ 316              		.loc 1 94 0
+ 317 006a 2046     		mov	r0, r4
+ 318 006c 0821     		movs	r1, #8
+ 319 006e 0422     		movs	r2, #4
+ 320 0070 FFF7FEFF 		bl	GPIO_PinAFConfig
+ 321              	.LVL12:
+  95:i2c/i2c.c     **** 			/* Connect PB9 to I2C_SDA */
+  96:i2c/i2c.c     **** 			GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_I2C1);
+ 322              		.loc 1 96 0
+ 323 0074 0921     		movs	r1, #9
+ 324 0076 0422     		movs	r2, #4
+ 325 0078 2046     		mov	r0, r4
+ 326 007a FFF7FEFF 		bl	GPIO_PinAFConfig
+ 327              	.LVL13:
+  97:i2c/i2c.c     **** 
+  98:i2c/i2c.c     **** 			/* NVIC configuration */
+  99:i2c/i2c.c     **** 			/* Configure the Priority Group to 1 bit */
+ 100:i2c/i2c.c     **** 			NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+ 328              		.loc 1 100 0
+ 329 007e 4FF4C060 		mov	r0, #1536
+ 330 0082 FFF7FEFF 		bl	NVIC_PriorityGroupConfig
+ 331              	.LVL14:
+ 101:i2c/i2c.c     **** 
+ 102:i2c/i2c.c     **** 			/* Configure the I2C event priority */
+ 103:i2c/i2c.c     **** 			NVIC_InitStruct.NVIC_IRQChannel = I2C1_EV_IRQn;
+ 104:i2c/i2c.c     **** 			NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0;
+ 332              		.loc 1 104 0
+ 333 0086 0026     		movs	r6, #0
+ 105:i2c/i2c.c     **** 			NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
+ 106:i2c/i2c.c     **** 			NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+ 107:i2c/i2c.c     **** 			NVIC_Init(&NVIC_InitStruct);
+ 334              		.loc 1 107 0
+ 335 0088 01A8     		add	r0, sp, #4
+ 103:i2c/i2c.c     **** 			NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0;
+ 336              		.loc 1 103 0
+ 337 008a 1F23     		movs	r3, #31
+ 338 008c 8DF80430 		strb	r3, [sp, #4]
+ 106:i2c/i2c.c     **** 			NVIC_Init(&NVIC_InitStruct);
+ 339              		.loc 1 106 0
+ 340 0090 8DF80750 		strb	r5, [sp, #7]
+ 104:i2c/i2c.c     **** 			NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
+ 341              		.loc 1 104 0
+ 342 0094 8DF80560 		strb	r6, [sp, #5]
+ 105:i2c/i2c.c     **** 			NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+ 343              		.loc 1 105 0
+ 344 0098 8DF80660 		strb	r6, [sp, #6]
+ 345              		.loc 1 107 0
+ 346 009c FFF7FEFF 		bl	NVIC_Init
+ 347              	.LVL15:
+ 108:i2c/i2c.c     **** 
+ 109:i2c/i2c.c     **** 			/* Configure I2C error interrupt to have the higher priority */
+ 110:i2c/i2c.c     **** 			NVIC_InitStruct.NVIC_IRQChannel = I2C1_ER_IRQn;
+ 348              		.loc 1 110 0
+ 349 00a0 2023     		movs	r3, #32
+ 111:i2c/i2c.c     **** 			NVIC_Init(&NVIC_InitStruct);
+ 350              		.loc 1 111 0
+ 351 00a2 01A8     		add	r0, sp, #4
+ 110:i2c/i2c.c     **** 			NVIC_Init(&NVIC_InitStruct);
+ 352              		.loc 1 110 0
+ 353 00a4 8DF80430 		strb	r3, [sp, #4]
+ 354              		.loc 1 111 0
+ 355 00a8 FFF7FEFF 		bl	NVIC_Init
+ 356              	.LVL16:
+ 112:i2c/i2c.c     **** 
+ 113:i2c/i2c.c     **** 			I2C_DeInit(I2C1);
+ 357              		.loc 1 113 0
+ 358 00ac 4FF4A840 		mov	r0, #21504
+ 114:i2c/i2c.c     **** 
+ 115:i2c/i2c.c     **** 			/* Initialize I2C peripheral */
+ 116:i2c/i2c.c     **** 			I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
+ 117:i2c/i2c.c     **** 			I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
+ 118:i2c/i2c.c     **** 			I2C_InitStruct.I2C_OwnAddress1 = ADDRESS;
+ 119:i2c/i2c.c     **** 			I2C_InitStruct.I2C_Ack = I2C_Ack_Enable;
+ 120:i2c/i2c.c     **** 			I2C_InitStruct.I2C_ClockSpeed = 400000;
+ 121:i2c/i2c.c     **** 			I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+ 359              		.loc 1 121 0
+ 360 00b0 4FF48044 		mov	r4, #16384
+ 113:i2c/i2c.c     **** 
+ 361              		.loc 1 113 0
+ 362 00b4 C4F20000 		movt	r0, 16384
+ 363 00b8 FFF7FEFF 		bl	I2C_DeInit
+ 364              	.LVL17:
+ 122:i2c/i2c.c     **** 
+ 123:i2c/i2c.c     **** 			/* Initialize I2C */
+ 124:i2c/i2c.c     **** 			I2C_Init(I2C1, &I2C_InitStruct);
+ 365              		.loc 1 124 0
+ 366 00bc 2004     		lsls	r0, r4, #16
+ 120:i2c/i2c.c     **** 			I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+ 367              		.loc 1 120 0
+ 368 00be 4FF4D453 		mov	r3, #6784
+ 369 00c2 C0F20603 		movt	r3, 6
+ 117:i2c/i2c.c     **** 			I2C_InitStruct.I2C_OwnAddress1 = ADDRESS;
+ 370              		.loc 1 117 0
+ 371 00c6 4BF6FF7E 		movw	lr, #49151
+ 119:i2c/i2c.c     **** 			I2C_InitStruct.I2C_ClockSpeed = 400000;
+ 372              		.loc 1 119 0
+ 373 00ca 4FF48062 		mov	r2, #1024
+ 374              		.loc 1 124 0
+ 375 00ce 04A9     		add	r1, sp, #16
+ 376 00d0 40F4A840 		orr	r0, r0, #21504
+ 118:i2c/i2c.c     **** 			I2C_InitStruct.I2C_Ack = I2C_Ack_Enable;
+ 377              		.loc 1 118 0
+ 378 00d4 3127     		movs	r7, #49
+ 120:i2c/i2c.c     **** 			I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+ 379              		.loc 1 120 0
+ 380 00d6 0493     		str	r3, [sp, #16]
+ 117:i2c/i2c.c     **** 			I2C_InitStruct.I2C_OwnAddress1 = ADDRESS;
+ 381              		.loc 1 117 0
+ 382 00d8 ADF816E0 		strh	lr, [sp, #22]	@ movhi
+ 119:i2c/i2c.c     **** 			I2C_InitStruct.I2C_ClockSpeed = 400000;
+ 383              		.loc 1 119 0
+ 384 00dc ADF81A20 		strh	r2, [sp, #26]	@ movhi
+ 116:i2c/i2c.c     **** 			I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
+ 385              		.loc 1 116 0
+ 386 00e0 ADF81460 		strh	r6, [sp, #20]	@ movhi
+ 121:i2c/i2c.c     **** 
+ 387              		.loc 1 121 0
+ 388 00e4 ADF81C40 		strh	r4, [sp, #28]	@ movhi
+ 118:i2c/i2c.c     **** 			I2C_InitStruct.I2C_Ack = I2C_Ack_Enable;
+ 389              		.loc 1 118 0
+ 390 00e8 ADF81870 		strh	r7, [sp, #24]	@ movhi
+ 391              		.loc 1 124 0
+ 392 00ec FFF7FEFF 		bl	I2C_Init
+ 393              	.LVL18:
+ 125:i2c/i2c.c     **** 
+ 126:i2c/i2c.c     **** 			/* Enable Error and Buffer Interrupts */
+ 127:i2c/i2c.c     **** 			I2C_ITConfig(I2C1, (I2C_IT_ERR | I2C_IT_EVT | I2C_IT_BUF), ENABLE);
+ 394              		.loc 1 127 0
+ 395 00f0 2004     		lsls	r0, r4, #16
+ 396 00f2 2A46     		mov	r2, r5
+ 397 00f4 40F4A840 		orr	r0, r0, #21504
+ 398 00f8 4FF4E061 		mov	r1, #1792
+ 399 00fc FFF7FEFF 		bl	I2C_ITConfig
+ 400              	.LVL19:
+ 128:i2c/i2c.c     **** 
+ 129:i2c/i2c.c     **** 			/* Enable I2C */
+ 130:i2c/i2c.c     **** 			I2C_Cmd(I2C1, ENABLE);
+ 401              		.loc 1 130 0
+ 402 0100 2004     		lsls	r0, r4, #16
+ 403 0102 40F4A840 		orr	r0, r0, #21504
+ 404 0106 2946     		mov	r1, r5
+ 405 0108 FFF7FEFF 		bl	I2C_Cmd
+ 406              	.LVL20:
+ 131:i2c/i2c.c     **** }
+ 407              		.loc 1 131 0
+ 408 010c 09B0     		add	sp, sp, #36
+ 409              		@ sp needed
+ 410 010e F0BD     		pop	{r4, r5, r6, r7, pc}
+ 411              		.cfi_endproc
+ 412              	.LFE129:
+ 414              		.section	.text.I2C1_ER_IRQHandler,"ax",%progbits
+ 415              		.align	2
+ 416              		.global	I2C1_ER_IRQHandler
+ 417              		.thumb
+ 418              		.thumb_func
+ 420              	I2C1_ER_IRQHandler:
+ 421              	.LFB130:
+ 132:i2c/i2c.c     **** 
+ 133:i2c/i2c.c     **** void I2C1_ER_IRQHandler(void)
+ 134:i2c/i2c.c     **** {
+ 422              		.loc 1 134 0
+ 423              		.cfi_startproc
+ 424              		@ args = 0, pretend = 0, frame = 0
+ 425              		@ frame_needed = 0, uses_anonymous_args = 0
+ 135:i2c/i2c.c     **** 
+ 136:i2c/i2c.c     ****   /* Check on I2C2 AF flag and clear it */
+ 137:i2c/i2c.c     ****   if (I2C_GetITStatus(I2C1, I2C_IT_AF))
+ 426              		.loc 1 137 0
+ 427 0000 4FF4A840 		mov	r0, #21504
+ 428 0004 4FF48061 		mov	r1, #1024
+ 134:i2c/i2c.c     **** 
+ 429              		.loc 1 134 0
+ 430 0008 10B5     		push	{r4, lr}
+ 431              	.LCFI4:
+ 432              		.cfi_def_cfa_offset 8
+ 433              		.cfi_offset 4, -8
+ 434              		.cfi_offset 14, -4
+ 435              		.loc 1 137 0
+ 436 000a C4F20000 		movt	r0, 16384
+ 437 000e C0F20011 		movt	r1, 256
+ 438 0012 FFF7FEFF 		bl	I2C_GetITStatus
+ 439              	.LVL21:
+ 440 0016 70B9     		cbnz	r0, .L18
+ 441              	.L9:
+ 138:i2c/i2c.c     ****   {
+ 139:i2c/i2c.c     ****     I2C_ClearITPendingBit(I2C1, I2C_IT_AF);
+ 140:i2c/i2c.c     ****   }
+ 141:i2c/i2c.c     ****   if ((I2C_ReadRegister(I2C1, I2C_Register_SR1) & 0xFF00) != 0x00)
+ 442              		.loc 1 141 0
+ 443 0018 4FF4A844 		mov	r4, #21504
+ 444 001c C4F20004 		movt	r4, 16384
+ 445 0020 2046     		mov	r0, r4
+ 446 0022 1421     		movs	r1, #20
+ 447 0024 FFF7FEFF 		bl	I2C_ReadRegister
+ 448              	.LVL22:
+ 449 0028 10F47F4F 		tst	r0, #65280
+ 142:i2c/i2c.c     ****     	{
+ 143:i2c/i2c.c     ****     		/* Clears error flags */
+ 144:i2c/i2c.c     ****     		I2C1->SR1 &= 0x00FF;
+ 450              		.loc 1 144 0
+ 451 002c 1EBF     		ittt	ne
+ 452 002e A38A     		ldrhne	r3, [r4, #20]
+ 453 0030 DBB2     		uxtbne	r3, r3
+ 454 0032 A382     		strhne	r3, [r4, #20]	@ movhi
+ 455 0034 10BD     		pop	{r4, pc}
+ 456              	.L18:
+ 139:i2c/i2c.c     ****   }
+ 457              		.loc 1 139 0
+ 458 0036 4FF4A840 		mov	r0, #21504
+ 459 003a 4FF48061 		mov	r1, #1024
+ 460 003e C4F20000 		movt	r0, 16384
+ 461 0042 C0F20011 		movt	r1, 256
+ 462 0046 FFF7FEFF 		bl	I2C_ClearITPendingBit
+ 463              	.LVL23:
+ 464 004a E5E7     		b	.L9
+ 465              		.cfi_endproc
+ 466              	.LFE130:
+ 468              		.section	.text.I2C1_EV_IRQHandler,"ax",%progbits
+ 469              		.align	2
+ 470              		.global	I2C1_EV_IRQHandler
+ 471              		.thumb
+ 472              		.thumb_func
+ 474              	I2C1_EV_IRQHandler:
+ 475              	.LFB131:
+ 145:i2c/i2c.c     ****     	}
+ 146:i2c/i2c.c     **** }
+ 147:i2c/i2c.c     **** 
+ 148:i2c/i2c.c     **** 
+ 149:i2c/i2c.c     **** 
+ 150:i2c/i2c.c     **** void I2C1_EV_IRQHandler(void)
+ 151:i2c/i2c.c     **** {
+ 476              		.loc 1 151 0
+ 477              		.cfi_startproc
+ 478              		@ args = 0, pretend = 0, frame = 0
+ 479              		@ frame_needed = 0, uses_anonymous_args = 0
+ 152:i2c/i2c.c     **** 	//LED_On();
+ 153:i2c/i2c.c     **** 
+ 154:i2c/i2c.c     ****   /* Get Last I2C Event */
+ 155:i2c/i2c.c     ****   Event = I2C_GetLastEvent(I2C1);
+ 480              		.loc 1 155 0
+ 481 0000 4FF4A840 		mov	r0, #21504
+ 151:i2c/i2c.c     **** 	//LED_On();
+ 482              		.loc 1 151 0
+ 483 0004 70B5     		push	{r4, r5, r6, lr}
+ 484              	.LCFI5:
+ 485              		.cfi_def_cfa_offset 16
+ 486              		.cfi_offset 4, -16
+ 487              		.cfi_offset 5, -12
+ 488              		.cfi_offset 6, -8
+ 489              		.cfi_offset 14, -4
+ 490              		.loc 1 155 0
+ 491 0006 C4F20000 		movt	r0, 16384
+ 492 000a FFF7FEFF 		bl	I2C_GetLastEvent
+ 493              	.LVL24:
+ 494 000e 40F20003 		movw	r3, #:lower16:.LANCHOR2
+ 495 0012 C0F20003 		movt	r3, #:upper16:.LANCHOR2
+ 156:i2c/i2c.c     ****   switch (Event)
+ 496              		.loc 1 156 0
+ 497 0016 0222     		movs	r2, #2
+ 155:i2c/i2c.c     ****   switch (Event)
+ 498              		.loc 1 155 0
+ 499 0018 1860     		str	r0, [r3]
+ 500              		.loc 1 156 0
+ 501 001a 1B68     		ldr	r3, [r3]
+ 502 001c C0F20302 		movt	r2, 3
+ 503 0020 9342     		cmp	r3, r2
+ 504 0022 00F02181 		beq	.L21
+ 505 0026 18D8     		bhi	.L22
+ 506 0028 B3F1021F 		cmp	r3, #131074
+ 507 002c 00F00F81 		beq	.L23
+ 508 0030 2BD8     		bhi	.L24
+ 509 0032 102B     		cmp	r3, #16
+ 510 0034 00F0CE80 		beq	.L25
+ 511 0038 B3F5806F 		cmp	r3, #1024
+ 512 003c 40F06281 		bne	.L46
+ 513              	.LBB22:
+ 514              	.LBB23:
+  31:i2c/i2c.c     **** 	RxComplete_f = SET;
+ 515              		.loc 1 31 0
+ 516 0040 40F20002 		movw	r2, #:lower16:index
+  32:i2c/i2c.c     **** }
+ 517              		.loc 1 32 0
+ 518 0044 40F20003 		movw	r3, #:lower16:.LANCHOR1
+  31:i2c/i2c.c     **** 	RxComplete_f = SET;
+ 519              		.loc 1 31 0
+ 520 0048 C0F20002 		movt	r2, #:upper16:index
+  32:i2c/i2c.c     **** }
+ 521              		.loc 1 32 0
+ 522 004c C0F20003 		movt	r3, #:upper16:.LANCHOR1
+  31:i2c/i2c.c     **** 	RxComplete_f = SET;
+ 523              		.loc 1 31 0
+ 524 0050 0020     		movs	r0, #0
+  32:i2c/i2c.c     **** }
+ 525              		.loc 1 32 0
+ 526 0052 0121     		movs	r1, #1
+  31:i2c/i2c.c     **** 	RxComplete_f = SET;
+ 527              		.loc 1 31 0
+ 528 0054 1070     		strb	r0, [r2]
+  32:i2c/i2c.c     **** }
+ 529              		.loc 1 32 0
+ 530 0056 1970     		strb	r1, [r3]
+ 531 0058 16E0     		b	.L19
+ 532              	.L22:
+ 533              	.LBE23:
+ 534              	.LBE22:
+ 535              		.loc 1 156 0
+ 536 005a 8422     		movs	r2, #132
+ 537 005c C0F20602 		movt	r2, 6
+ 538 0060 9342     		cmp	r3, r2
+ 539 0062 45D0     		beq	.L29
+ 540 0064 5CD8     		bhi	.L30
+ 541 0066 8022     		movs	r2, #128
+ 542 0068 C0F20602 		movt	r2, 6
+ 543 006c 9342     		cmp	r3, r2
+ 544 006e 3FD0     		beq	.L29
+ 545 0070 8222     		movs	r2, #130
+ 546 0072 C0F20602 		movt	r2, 6
+ 547 0076 9342     		cmp	r3, r2
+ 548 0078 00F02B81 		beq	.L31
+ 549 007c 4022     		movs	r2, #64
+ 550 007e C0F20302 		movt	r2, 3
+ 551 0082 9342     		cmp	r3, r2
+ 552 0084 00F00681 		beq	.L47
+ 553              	.L19:
+ 554 0088 70BD     		pop	{r4, r5, r6, pc}
+ 555              	.L24:
+ 556 008a 4422     		movs	r2, #68
+ 557 008c C0F20202 		movt	r2, 2
+ 558 0090 9342     		cmp	r3, r2
+ 559 0092 00F0C980 		beq	.L27
+ 560 0096 0122     		movs	r2, #1
+ 561 0098 C0F20302 		movt	r2, 3
+ 562 009c 9342     		cmp	r3, r2
+ 563 009e 40F0BD80 		bne	.L48
+ 157:i2c/i2c.c     ****     {
+ 158:i2c/i2c.c     **** 
+ 159:i2c/i2c.c     ****     case I2C_EVENT_MASTER_MODE_SELECT:
+ 160:i2c/i2c.c     ****       /* Send slave address for writing */
+ 161:i2c/i2c.c     ****         TxComplete_f = RESET;
+ 564              		.loc 1 161 0
+ 565 00a2 40F20006 		movw	r6, #:lower16:.LANCHOR0
+ 162:i2c/i2c.c     ****         RxComplete_f = RESET;
+ 566              		.loc 1 162 0
+ 567 00a6 40F20005 		movw	r5, #:lower16:.LANCHOR1
+ 163:i2c/i2c.c     ****         index =0;
+ 568              		.loc 1 163 0
+ 569 00aa 40F20003 		movw	r3, #:lower16:index
+ 570 00ae C0F20003 		movt	r3, #:upper16:index
+ 161:i2c/i2c.c     ****         RxComplete_f = RESET;
+ 571              		.loc 1 161 0
+ 572 00b2 C0F20006 		movt	r6, #:upper16:.LANCHOR0
+ 162:i2c/i2c.c     ****         RxComplete_f = RESET;
+ 573              		.loc 1 162 0
+ 574 00b6 C0F20005 		movt	r5, #:upper16:.LANCHOR1
+ 164:i2c/i2c.c     ****         I2C_ITConfig(I2C1,I2C_IT_BUF,ENABLE);
+ 575              		.loc 1 164 0
+ 576 00ba 4FF4A840 		mov	r0, #21504
+ 161:i2c/i2c.c     ****         RxComplete_f = RESET;
+ 577              		.loc 1 161 0
+ 578 00be 0024     		movs	r4, #0
+ 579              		.loc 1 164 0
+ 580 00c0 C4F20000 		movt	r0, 16384
+ 581 00c4 4FF48061 		mov	r1, #1024
+ 582 00c8 0122     		movs	r2, #1
+ 163:i2c/i2c.c     ****         index =0;
+ 583              		.loc 1 163 0
+ 584 00ca 1C70     		strb	r4, [r3]
+ 161:i2c/i2c.c     ****         RxComplete_f = RESET;
+ 585              		.loc 1 161 0
+ 586 00cc 3470     		strb	r4, [r6]
+ 162:i2c/i2c.c     ****         index =0;
+ 587              		.loc 1 162 0
+ 588 00ce 2C70     		strb	r4, [r5]
+ 589              		.loc 1 164 0
+ 590 00d0 FFF7FEFF 		bl	I2C_ITConfig
+ 591              	.LVL25:
+ 165:i2c/i2c.c     ****         I2C_Send7bitAddress(I2C1, SLAVE_ADDRESS,  mode );
+ 592              		.loc 1 165 0
+ 593 00d4 40F20003 		movw	r3, #:lower16:mode
+ 594 00d8 C0F20003 		movt	r3, #:upper16:mode
+ 595 00dc 4FF4A840 		mov	r0, #21504
+ 596 00e0 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 597 00e2 C4F20000 		movt	r0, 16384
+ 598 00e6 E021     		movs	r1, #224
+ 166:i2c/i2c.c     ****       break;
+ 167:i2c/i2c.c     ****     case I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED:
+ 168:i2c/i2c.c     ****       I2C_SendData(I2C1, buffer.data[index++]);
+ 169:i2c/i2c.c     ****       break;
+ 170:i2c/i2c.c     ****     case I2C_EVENT_MASTER_BYTE_TRANSMITTING:
+ 171:i2c/i2c.c     ****     case I2C_EVENT_MASTER_BYTE_TRANSMITTED:
+ 172:i2c/i2c.c     ****       if(index >= buffer.len)
+ 173:i2c/i2c.c     ****         {
+ 174:i2c/i2c.c     ****           I2C_GenerateSTOP(I2C1,ENABLE);
+ 175:i2c/i2c.c     ****           while(I2C_GetFlagStatus(I2C1,I2C_FLAG_BUSY));
+ 176:i2c/i2c.c     ****           TxComplete_f = SET;
+ 177:i2c/i2c.c     ****           I2C_ITConfig(I2C1,I2C_IT_BUF,DISABLE);
+ 178:i2c/i2c.c     ****           I2C_Cmd(I2C1, DISABLE);
+ 179:i2c/i2c.c     ****           break;
+ 180:i2c/i2c.c     ****         }
+ 181:i2c/i2c.c     ****       I2C_SendData(I2C1, buffer.data[index++]);
+ 182:i2c/i2c.c     ****       break;
+ 183:i2c/i2c.c     **** 
+ 184:i2c/i2c.c     ****     case I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED:
+ 185:i2c/i2c.c     ****       //LED_On();
+ 186:i2c/i2c.c     ****       byte2Read = len;
+ 187:i2c/i2c.c     ****       if(byte2Read == 1)
+ 188:i2c/i2c.c     ****         I2C_AcknowledgeConfig(I2C1,DISABLE);
+ 189:i2c/i2c.c     ****       break;
+ 190:i2c/i2c.c     ****     case I2C_EVENT_MASTER_BYTE_RECEIVED:
+ 191:i2c/i2c.c     ****       if(byte2Read ==2)
+ 192:i2c/i2c.c     ****         I2C_AcknowledgeConfig(I2C1,DISABLE);
+ 193:i2c/i2c.c     ****       if(byte2Read == 1)
+ 194:i2c/i2c.c     ****         {
+ 195:i2c/i2c.c     ****         I2C_GenerateSTOP(I2C1,ENABLE);
+ 196:i2c/i2c.c     ****         while(I2C_GetFlagStatus(I2C1,I2C_FLAG_BUSY));
+ 197:i2c/i2c.c     ****         RxComplete_f = SET;
+ 198:i2c/i2c.c     ****         I2C_ITConfig(I2C1,I2C_IT_BUF,DISABLE);
+ 199:i2c/i2c.c     ****         I2C_Cmd(I2C1, DISABLE);
+ 200:i2c/i2c.c     ****         }
+ 201:i2c/i2c.c     ****       buffer.data[index++] = I2C_ReceiveData(I2C1);
+ 202:i2c/i2c.c     ****       byte2Read --;
+ 203:i2c/i2c.c     ****       break;
+ 204:i2c/i2c.c     **** 
+ 205:i2c/i2c.c     **** 
+ 206:i2c/i2c.c     ****     /**************SLAVE RECEIVE EVENT*********************************/
+ 207:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_RECEIVER_ADDRESS_MATCHED :
+ 208:i2c/i2c.c     ****     	//read SR1 followed by reading SR2 in order to clear ADDR bit
+ 209:i2c/i2c.c     ****     	I2C_GetLastEvent(I2C1);
+ 210:i2c/i2c.c     **** 
+ 211:i2c/i2c.c     ****     	index =0;
+ 212:i2c/i2c.c     ****        	break;
+ 213:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_BYTE_RECEIVED:
+ 214:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_BYTE_RECEIVED| I2C_SR1_BTF:
+ 215:i2c/i2c.c     ****     	buffer.data[index++]=I2C_ReceiveData(I2C1);
+ 216:i2c/i2c.c     ****        	break;
+ 217:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_STOP_DETECTED:
+ 218:i2c/i2c.c     ****     	buffer.len = index;
+ 219:i2c/i2c.c     ****     	//clear STPOF by reading SR1 register followed by writing to the CR1 register
+ 220:i2c/i2c.c     ****     	//I2C_GetLastEvent(I2C1);
+ 221:i2c/i2c.c     ****     	I2C_GetFlagStatus(I2C1, I2C_FLAG_STOPF);
+ 222:i2c/i2c.c     ****     	I2C_Cmd(I2C1, ENABLE);
+ 223:i2c/i2c.c     ****     	I2C_StopReceived();
+ 224:i2c/i2c.c     ****     	break;
+ 225:i2c/i2c.c     **** 
+ 226:i2c/i2c.c     ****     /*****************SLAVE TRANSMITT EVENT*******************************/
+ 227:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_TRANSMITTER_ADDRESS_MATCHED:
+ 228:i2c/i2c.c     ****     	//read SR1 followed by reading SR2 in order to clear ADDR bit
+ 229:i2c/i2c.c     ****     	I2C_GetLastEvent(I2C1);
+ 230:i2c/i2c.c     ****     	//LED_On();
+ 231:i2c/i2c.c     ****     	index=0;
+ 232:i2c/i2c.c     ****     	I2C_SendData(I2C1, buffer.data[index++]);
+ 233:i2c/i2c.c     ****     	break;
+ 234:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_BYTE_TRANSMITTING:
+ 235:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_BYTE_TRANSMITTED:
+ 236:i2c/i2c.c     ****     	if(index < buffer.len)
+ 237:i2c/i2c.c     ****     	I2C_SendData(I2C1, buffer.data[index++]);
+ 238:i2c/i2c.c     ****     	break;
+ 239:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_ACK_FAILURE:
+ 240:i2c/i2c.c     ****     	index = buffer.len;
+ 241:i2c/i2c.c     ****     	I2C_StopReceived();
+ 242:i2c/i2c.c     ****         //LED_On();
+ 243:i2c/i2c.c     ****     	break;
+ 244:i2c/i2c.c     ****     default:
+ 245:i2c/i2c.c     ****       break;
+ 246:i2c/i2c.c     ****     }
+ 247:i2c/i2c.c     **** }
+ 599              		.loc 1 247 0
+ 600 00e8 BDE87040 		pop	{r4, r5, r6, lr}
+ 165:i2c/i2c.c     ****         I2C_Send7bitAddress(I2C1, SLAVE_ADDRESS,  mode );
+ 601              		.loc 1 165 0
+ 602 00ec FFF7FEBF 		b	I2C_Send7bitAddress
+ 603              	.LVL26:
+ 604              	.L29:
+ 236:i2c/i2c.c     ****     	I2C_SendData(I2C1, buffer.data[index++]);
+ 605              		.loc 1 236 0
+ 606 00f0 40F20003 		movw	r3, #:lower16:index
+ 607 00f4 40F20002 		movw	r2, #:lower16:buffer
+ 608 00f8 C0F20003 		movt	r3, #:upper16:index
+ 609 00fc C0F20002 		movt	r2, #:upper16:buffer
+ 610 0100 1C78     		ldrb	r4, [r3]	@ zero_extendqisi2
+ 611 0102 92F86410 		ldrb	r1, [r2, #100]	@ zero_extendqisi2
+ 612 0106 A142     		cmp	r1, r4
+ 613 0108 BED9     		bls	.L19
+ 237:i2c/i2c.c     ****     	break;
+ 614              		.loc 1 237 0
+ 615 010a 4FF4A840 		mov	r0, #21504
+ 616              	.L45:
+ 617 010e 115D     		ldrb	r1, [r2, r4]	@ zero_extendqisi2
+ 618 0110 0134     		adds	r4, r4, #1
+ 619 0112 1C70     		strb	r4, [r3]
+ 620 0114 C4F20000 		movt	r0, 16384
+ 621              		.loc 1 247 0
+ 622 0118 BDE87040 		pop	{r4, r5, r6, lr}
+ 237:i2c/i2c.c     ****     	break;
+ 623              		.loc 1 237 0
+ 624 011c FFF7FEBF 		b	I2C_SendData
+ 625              	.LVL27:
+ 626              	.L30:
+ 156:i2c/i2c.c     ****     {
+ 627              		.loc 1 156 0
+ 628 0120 8222     		movs	r2, #130
+ 629 0122 C0F20702 		movt	r2, 7
+ 630 0126 9342     		cmp	r3, r2
+ 631 0128 40D0     		beq	.L33
+ 632 012a 8422     		movs	r2, #132
+ 633 012c C0F20702 		movt	r2, 7
+ 634 0130 9342     		cmp	r3, r2
+ 635 0132 04D0     		beq	.L34
+ 636 0134 8022     		movs	r2, #128
+ 637 0136 C0F20702 		movt	r2, 7
+ 638 013a 9342     		cmp	r3, r2
+ 639 013c A4D1     		bne	.L19
+ 640              	.L34:
+ 172:i2c/i2c.c     ****         {
+ 641              		.loc 1 172 0
+ 642 013e 40F20003 		movw	r3, #:lower16:index
+ 643 0142 40F20002 		movw	r2, #:lower16:buffer
+ 644 0146 C0F20003 		movt	r3, #:upper16:index
+ 645 014a C0F20002 		movt	r2, #:upper16:buffer
+ 646 014e 1C78     		ldrb	r4, [r3]	@ zero_extendqisi2
+ 647 0150 92F86410 		ldrb	r1, [r2, #100]	@ zero_extendqisi2
+ 648 0154 A142     		cmp	r1, r4
+ 174:i2c/i2c.c     ****           while(I2C_GetFlagStatus(I2C1,I2C_FLAG_BUSY));
+ 649              		.loc 1 174 0
+ 650 0156 4FF4A840 		mov	r0, #21504
+ 172:i2c/i2c.c     ****         {
+ 651              		.loc 1 172 0
+ 652 015a D8D8     		bhi	.L45
+ 174:i2c/i2c.c     ****           while(I2C_GetFlagStatus(I2C1,I2C_FLAG_BUSY));
+ 653              		.loc 1 174 0
+ 654 015c C4F20000 		movt	r0, 16384
+ 655 0160 0121     		movs	r1, #1
+ 656 0162 FFF7FEFF 		bl	I2C_GenerateSTOP
+ 657              	.LVL28:
+ 658              	.L37:
+ 175:i2c/i2c.c     ****           TxComplete_f = SET;
+ 659              		.loc 1 175 0 discriminator 1
+ 660 0166 4FF4A840 		mov	r0, #21504
+ 661 016a C4F20000 		movt	r0, 16384
+ 662 016e 4FF40031 		mov	r1, #131072
+ 663 0172 FFF7FEFF 		bl	I2C_GetFlagStatus
+ 664              	.LVL29:
+ 665 0176 0446     		mov	r4, r0
+ 666 0178 0028     		cmp	r0, #0
+ 667 017a F4D1     		bne	.L37
+ 176:i2c/i2c.c     ****           I2C_ITConfig(I2C1,I2C_IT_BUF,DISABLE);
+ 668              		.loc 1 176 0
+ 669 017c 40F20003 		movw	r3, #:lower16:.LANCHOR0
+ 670 0180 C0F20003 		movt	r3, #:upper16:.LANCHOR0
+ 177:i2c/i2c.c     ****           I2C_Cmd(I2C1, DISABLE);
+ 671              		.loc 1 177 0
+ 672 0184 4FF4A840 		mov	r0, #21504
+ 176:i2c/i2c.c     ****           I2C_ITConfig(I2C1,I2C_IT_BUF,DISABLE);
+ 673              		.loc 1 176 0
+ 674 0188 0125     		movs	r5, #1
+ 177:i2c/i2c.c     ****           I2C_Cmd(I2C1, DISABLE);
+ 675              		.loc 1 177 0
+ 676 018a C4F20000 		movt	r0, 16384
+ 677 018e 4FF48061 		mov	r1, #1024
+ 678 0192 2246     		mov	r2, r4
+ 176:i2c/i2c.c     ****           I2C_ITConfig(I2C1,I2C_IT_BUF,DISABLE);
+ 679              		.loc 1 176 0
+ 680 0194 1D70     		strb	r5, [r3]
+ 177:i2c/i2c.c     ****           I2C_Cmd(I2C1, DISABLE);
+ 681              		.loc 1 177 0
+ 682 0196 FFF7FEFF 		bl	I2C_ITConfig
+ 683              	.LVL30:
+ 178:i2c/i2c.c     ****           break;
+ 684              		.loc 1 178 0
+ 685 019a 4FF4A840 		mov	r0, #21504
+ 686 019e 2146     		mov	r1, r4
+ 687 01a0 C4F20000 		movt	r0, 16384
+ 688              		.loc 1 247 0
+ 689 01a4 BDE87040 		pop	{r4, r5, r6, lr}
+ 178:i2c/i2c.c     ****           break;
+ 690              		.loc 1 178 0
+ 691 01a8 FFF7FEBF 		b	I2C_Cmd
+ 692              	.LVL31:
+ 693              	.L33:
+ 168:i2c/i2c.c     ****       break;
+ 694              		.loc 1 168 0
+ 695 01ac 40F20003 		movw	r3, #:lower16:index
+ 696 01b0 C0F20003 		movt	r3, #:upper16:index
+ 697 01b4 40F20002 		movw	r2, #:lower16:buffer
+ 698 01b8 1978     		ldrb	r1, [r3]	@ zero_extendqisi2
+ 699 01ba C0F20002 		movt	r2, #:upper16:buffer
+ 700 01be 4C1C     		adds	r4, r1, #1
+ 701 01c0 4FF4A840 		mov	r0, #21504
+ 702 01c4 1C70     		strb	r4, [r3]
+ 703 01c6 515C     		ldrb	r1, [r2, r1]	@ zero_extendqisi2
+ 704 01c8 C4F20000 		movt	r0, 16384
+ 705              		.loc 1 247 0
+ 706 01cc BDE87040 		pop	{r4, r5, r6, lr}
+ 168:i2c/i2c.c     ****       break;
+ 707              		.loc 1 168 0
+ 708 01d0 FFF7FEBF 		b	I2C_SendData
+ 709              	.LVL32:
+ 710              	.L25:
+ 218:i2c/i2c.c     ****     	//clear STPOF by reading SR1 register followed by writing to the CR1 register
+ 711              		.loc 1 218 0
+ 712 01d4 40F20004 		movw	r4, #:lower16:index
+ 713 01d8 C0F20004 		movt	r4, #:upper16:index
+ 714 01dc 40F20003 		movw	r3, #:lower16:buffer
+ 715 01e0 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 716 01e2 C0F20003 		movt	r3, #:upper16:buffer
+ 221:i2c/i2c.c     ****     	I2C_Cmd(I2C1, ENABLE);
+ 717              		.loc 1 221 0
+ 718 01e6 4FF4A840 		mov	r0, #21504
+ 719 01ea 1021     		movs	r1, #16
+ 720 01ec C1F20001 		movt	r1, 4096
+ 721 01f0 C4F20000 		movt	r0, 16384
+ 218:i2c/i2c.c     ****     	//clear STPOF by reading SR1 register followed by writing to the CR1 register
+ 722              		.loc 1 218 0
+ 723 01f4 83F86420 		strb	r2, [r3, #100]
+ 221:i2c/i2c.c     ****     	I2C_Cmd(I2C1, ENABLE);
+ 724              		.loc 1 221 0
+ 725 01f8 FFF7FEFF 		bl	I2C_GetFlagStatus
+ 726              	.LVL33:
+ 222:i2c/i2c.c     ****     	I2C_StopReceived();
+ 727              		.loc 1 222 0
+ 728 01fc 4FF4A840 		mov	r0, #21504
+ 729 0200 0121     		movs	r1, #1
+ 730 0202 C4F20000 		movt	r0, 16384
+ 731 0206 FFF7FEFF 		bl	I2C_Cmd
+ 732              	.LVL34:
+ 733              	.LBB24:
+ 734              	.LBB25:
+  32:i2c/i2c.c     **** }
+ 735              		.loc 1 32 0
+ 736 020a 40F20003 		movw	r3, #:lower16:.LANCHOR1
+ 737 020e C0F20003 		movt	r3, #:upper16:.LANCHOR1
+  31:i2c/i2c.c     **** 	RxComplete_f = SET;
+ 738              		.loc 1 31 0
+ 739 0212 0021     		movs	r1, #0
+  32:i2c/i2c.c     **** }
+ 740              		.loc 1 32 0
+ 741 0214 0122     		movs	r2, #1
+  31:i2c/i2c.c     **** 	RxComplete_f = SET;
+ 742              		.loc 1 31 0
+ 743 0216 2170     		strb	r1, [r4]
+  32:i2c/i2c.c     **** }
+ 744              		.loc 1 32 0
+ 745 0218 1A70     		strb	r2, [r3]
+ 746 021a 70BD     		pop	{r4, r5, r6, pc}
+ 747              	.L48:
+ 748              	.LBE25:
+ 749              	.LBE24:
+ 156:i2c/i2c.c     ****     {
+ 750              		.loc 1 156 0
+ 751 021c 4022     		movs	r2, #64
+ 752 021e C0F20202 		movt	r2, 2
+ 753 0222 9342     		cmp	r3, r2
+ 754 0224 7FF430AF 		bne	.L19
+ 755              	.L27:
+ 215:i2c/i2c.c     ****        	break;
+ 756              		.loc 1 215 0
+ 757 0228 40F20003 		movw	r3, #:lower16:index
+ 758 022c C0F20003 		movt	r3, #:upper16:index
+ 759 0230 4FF4A840 		mov	r0, #21504
+ 760 0234 1C78     		ldrb	r4, [r3]	@ zero_extendqisi2
+ 761 0236 C4F20000 		movt	r0, 16384
+ 762 023a 621C     		adds	r2, r4, #1
+ 763 023c 1A70     		strb	r2, [r3]
+ 764 023e FFF7FEFF 		bl	I2C_ReceiveData
+ 765              	.LVL35:
+ 766 0242 40F20003 		movw	r3, #:lower16:buffer
+ 767 0246 C0F20003 		movt	r3, #:upper16:buffer
+ 768 024a 1855     		strb	r0, [r3, r4]
+ 216:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_STOP_DETECTED:
+ 769              		.loc 1 216 0
+ 770 024c 70BD     		pop	{r4, r5, r6, pc}
+ 771              	.L23:
+ 209:i2c/i2c.c     **** 
+ 772              		.loc 1 209 0
+ 773 024e 4FF4A840 		mov	r0, #21504
+ 774 0252 C4F20000 		movt	r0, 16384
+ 775 0256 FFF7FEFF 		bl	I2C_GetLastEvent
+ 776              	.LVL36:
+ 211:i2c/i2c.c     ****        	break;
+ 777              		.loc 1 211 0
+ 778 025a 40F20003 		movw	r3, #:lower16:index
+ 779 025e C0F20003 		movt	r3, #:upper16:index
+ 780 0262 0022     		movs	r2, #0
+ 781 0264 1A70     		strb	r2, [r3]
+ 212:i2c/i2c.c     ****     case I2C_EVENT_SLAVE_BYTE_RECEIVED:
+ 782              		.loc 1 212 0
+ 783 0266 70BD     		pop	{r4, r5, r6, pc}
+ 784              	.L21:
+ 186:i2c/i2c.c     ****       if(byte2Read == 1)
+ 785              		.loc 1 186 0
+ 786 0268 40F20002 		movw	r2, #:lower16:len
+ 787 026c C0F20002 		movt	r2, #:upper16:len
+ 788 0270 40F20003 		movw	r3, #:lower16:byte2Read
+ 789 0274 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 790 0276 C0F20003 		movt	r3, #:upper16:byte2Read
+ 187:i2c/i2c.c     ****         I2C_AcknowledgeConfig(I2C1,DISABLE);
+ 791              		.loc 1 187 0
+ 792 027a 012A     		cmp	r2, #1
+ 186:i2c/i2c.c     ****       if(byte2Read == 1)
+ 793              		.loc 1 186 0
+ 794 027c 1A70     		strb	r2, [r3]
+ 187:i2c/i2c.c     ****         I2C_AcknowledgeConfig(I2C1,DISABLE);
+ 795              		.loc 1 187 0
+ 796 027e 7FF403AF 		bne	.L19
+ 188:i2c/i2c.c     ****       break;
+ 797              		.loc 1 188 0
+ 798 0282 4FF4A840 		mov	r0, #21504
+ 799 0286 C4F20000 		movt	r0, 16384
+ 800 028a 0021     		movs	r1, #0
+ 801              		.loc 1 247 0
+ 802 028c BDE87040 		pop	{r4, r5, r6, lr}
+ 188:i2c/i2c.c     ****       break;
+ 803              		.loc 1 188 0
+ 804 0290 FFF7FEBF 		b	I2C_AcknowledgeConfig
+ 805              	.LVL37:
+ 806              	.L47:
+ 191:i2c/i2c.c     ****         I2C_AcknowledgeConfig(I2C1,DISABLE);
+ 807              		.loc 1 191 0
+ 808 0294 40F20004 		movw	r4, #:lower16:byte2Read
+ 809 0298 C0F20004 		movt	r4, #:upper16:byte2Read
+ 810 029c 2178     		ldrb	r1, [r4]	@ zero_extendqisi2
+ 811 029e 0229     		cmp	r1, #2
+ 812 02a0 59D0     		beq	.L49
+ 813              	.L39:
+ 193:i2c/i2c.c     ****         {
+ 814              		.loc 1 193 0
+ 815 02a2 0129     		cmp	r1, #1
+ 816 02a4 2FD0     		beq	.L50
+ 817              	.L40:
+ 201:i2c/i2c.c     ****       byte2Read --;
+ 818              		.loc 1 201 0
+ 819 02a6 40F20003 		movw	r3, #:lower16:index
+ 820 02aa C0F20003 		movt	r3, #:upper16:index
+ 821 02ae 4FF4A840 		mov	r0, #21504
+ 822 02b2 1D78     		ldrb	r5, [r3]	@ zero_extendqisi2
+ 823 02b4 C4F20000 		movt	r0, 16384
+ 824 02b8 6A1C     		adds	r2, r5, #1
+ 825 02ba 1A70     		strb	r2, [r3]
+ 826 02bc FFF7FEFF 		bl	I2C_ReceiveData
+ 827              	.LVL38:
+ 828 02c0 40F20003 		movw	r3, #:lower16:buffer
+ 202:i2c/i2c.c     ****       break;
+ 829              		.loc 1 202 0
+ 830 02c4 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 201:i2c/i2c.c     ****       byte2Read --;
+ 831              		.loc 1 201 0
+ 832 02c6 C0F20003 		movt	r3, #:upper16:buffer
+ 202:i2c/i2c.c     ****       break;
+ 833              		.loc 1 202 0
+ 834 02ca 013A     		subs	r2, r2, #1
+ 201:i2c/i2c.c     ****       byte2Read --;
+ 835              		.loc 1 201 0
+ 836 02cc 5855     		strb	r0, [r3, r5]
+ 202:i2c/i2c.c     ****       break;
+ 837              		.loc 1 202 0
+ 838 02ce 2270     		strb	r2, [r4]
+ 203:i2c/i2c.c     **** 
+ 839              		.loc 1 203 0
+ 840 02d0 70BD     		pop	{r4, r5, r6, pc}
+ 841              	.L31:
+ 229:i2c/i2c.c     ****     	//LED_On();
+ 842              		.loc 1 229 0
+ 843 02d2 4FF4A840 		mov	r0, #21504
+ 844 02d6 C4F20000 		movt	r0, 16384
+ 845 02da FFF7FEFF 		bl	I2C_GetLastEvent
+ 846              	.LVL39:
+ 232:i2c/i2c.c     ****     	break;
+ 847              		.loc 1 232 0
+ 848 02de 40F20002 		movw	r2, #:lower16:buffer
+ 849 02e2 C0F20002 		movt	r2, #:upper16:buffer
+ 850 02e6 40F20003 		movw	r3, #:lower16:index
+ 851 02ea C0F20003 		movt	r3, #:upper16:index
+ 852 02ee 1178     		ldrb	r1, [r2]	@ zero_extendqisi2
+ 853 02f0 0122     		movs	r2, #1
+ 854 02f2 4FF4A840 		mov	r0, #21504
+ 855 02f6 1A70     		strb	r2, [r3]
+ 856 02f8 C4F20000 		movt	r0, 16384
+ 857              		.loc 1 247 0
+ 858 02fc BDE87040 		pop	{r4, r5, r6, lr}
+ 232:i2c/i2c.c     ****     	break;
+ 859              		.loc 1 232 0
+ 860 0300 FFF7FEBF 		b	I2C_SendData
+ 861              	.LVL40:
+ 862              	.L46:
+ 863 0304 70BD     		pop	{r4, r5, r6, pc}
+ 864              	.L50:
+ 195:i2c/i2c.c     ****         while(I2C_GetFlagStatus(I2C1,I2C_FLAG_BUSY));
+ 865              		.loc 1 195 0
+ 866 0306 4FF4A840 		mov	r0, #21504
+ 867 030a C4F20000 		movt	r0, 16384
+ 868 030e FFF7FEFF 		bl	I2C_GenerateSTOP
+ 869              	.LVL41:
+ 870              	.L42:
+ 196:i2c/i2c.c     ****         RxComplete_f = SET;
+ 871              		.loc 1 196 0 discriminator 1
+ 872 0312 4FF4A840 		mov	r0, #21504
+ 873 0316 C4F20000 		movt	r0, 16384
+ 874 031a 4FF40031 		mov	r1, #131072
+ 875 031e FFF7FEFF 		bl	I2C_GetFlagStatus
+ 876              	.LVL42:
+ 877 0322 0546     		mov	r5, r0
+ 878 0324 0028     		cmp	r0, #0
+ 879 0326 F4D1     		bne	.L42
+ 197:i2c/i2c.c     ****         I2C_ITConfig(I2C1,I2C_IT_BUF,DISABLE);
+ 880              		.loc 1 197 0
+ 881 0328 40F20003 		movw	r3, #:lower16:.LANCHOR1
+ 882 032c C0F20003 		movt	r3, #:upper16:.LANCHOR1
+ 198:i2c/i2c.c     ****         I2C_Cmd(I2C1, DISABLE);
+ 883              		.loc 1 198 0
+ 884 0330 4FF4A840 		mov	r0, #21504
+ 197:i2c/i2c.c     ****         I2C_ITConfig(I2C1,I2C_IT_BUF,DISABLE);
+ 885              		.loc 1 197 0
+ 886 0334 0126     		movs	r6, #1
+ 198:i2c/i2c.c     ****         I2C_Cmd(I2C1, DISABLE);
+ 887              		.loc 1 198 0
+ 888 0336 C4F20000 		movt	r0, 16384
+ 889 033a 4FF48061 		mov	r1, #1024
+ 890 033e 2A46     		mov	r2, r5
+ 197:i2c/i2c.c     ****         I2C_ITConfig(I2C1,I2C_IT_BUF,DISABLE);
+ 891              		.loc 1 197 0
+ 892 0340 1E70     		strb	r6, [r3]
+ 198:i2c/i2c.c     ****         I2C_Cmd(I2C1, DISABLE);
+ 893              		.loc 1 198 0
+ 894 0342 FFF7FEFF 		bl	I2C_ITConfig
+ 895              	.LVL43:
+ 199:i2c/i2c.c     ****         }
+ 896              		.loc 1 199 0
+ 897 0346 4FF4A840 		mov	r0, #21504
+ 898 034a 2946     		mov	r1, r5
+ 899 034c C4F20000 		movt	r0, 16384
+ 900 0350 FFF7FEFF 		bl	I2C_Cmd
+ 901              	.LVL44:
+ 902 0354 A7E7     		b	.L40
+ 903              	.L49:
+ 192:i2c/i2c.c     ****       if(byte2Read == 1)
+ 904              		.loc 1 192 0
+ 905 0356 4FF4A840 		mov	r0, #21504
+ 906 035a 0021     		movs	r1, #0
+ 907 035c C4F20000 		movt	r0, 16384
+ 908 0360 FFF7FEFF 		bl	I2C_AcknowledgeConfig
+ 909              	.LVL45:
+ 910 0364 2178     		ldrb	r1, [r4]	@ zero_extendqisi2
+ 911 0366 9CE7     		b	.L39
+ 912              		.cfi_endproc
+ 913              	.LFE131:
+ 915              		.section	.text.I2C_ByteRead,"ax",%progbits
+ 916              		.align	2
+ 917              		.global	I2C_ByteRead
+ 918              		.thumb
+ 919              		.thumb_func
+ 921              	I2C_ByteRead:
+ 922              	.LFB132:
+ 248:i2c/i2c.c     **** uint8_t I2C_ByteRead(uint8_t addr)
+ 249:i2c/i2c.c     **** {
+ 923              		.loc 1 249 0
+ 924              		.cfi_startproc
+ 925              		@ args = 0, pretend = 0, frame = 0
+ 926              		@ frame_needed = 0, uses_anonymous_args = 0
+ 927              	.LVL46:
+ 928 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 929              	.LCFI6:
+ 930              		.cfi_def_cfa_offset 32
+ 931              		.cfi_offset 3, -32
+ 932              		.cfi_offset 4, -28
+ 933              		.cfi_offset 5, -24
+ 934              		.cfi_offset 6, -20
+ 935              		.cfi_offset 7, -16
+ 936              		.cfi_offset 8, -12
+ 937              		.cfi_offset 9, -8
+ 938              		.cfi_offset 14, -4
+ 250:i2c/i2c.c     ****   uint8_t data;
+ 251:i2c/i2c.c     ****   I2C_buffer * buffer;
+ 252:i2c/i2c.c     **** 
+ 253:i2c/i2c.c     ****   buffer = I2C_GetBuffer();
+ 254:i2c/i2c.c     ****   buffer->len = 1;
+ 939              		.loc 1 254 0
+ 940 0004 40F20005 		movw	r5, #:lower16:buffer
+ 941 0008 C0F20005 		movt	r5, #:upper16:buffer
+ 942              	.LBB26:
+ 943              	.LBB27:
+  43:i2c/i2c.c     ****   index =0;
+ 944              		.loc 1 43 0
+ 945 000c 40F20007 		movw	r7, #:lower16:.LANCHOR0
+  44:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 946              		.loc 1 44 0
+ 947 0010 40F20009 		movw	r9, #:lower16:index
+  45:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 948              		.loc 1 45 0
+ 949 0014 40F20008 		movw	r8, #:lower16:mode
+ 950              	.LBE27:
+ 951              	.LBE26:
+ 952              		.loc 1 254 0
+ 953 0018 0124     		movs	r4, #1
+ 255:i2c/i2c.c     ****   buffer->data[0]= addr;
+ 954              		.loc 1 255 0
+ 955 001a 2870     		strb	r0, [r5]
+ 956              	.LBB30:
+ 957              	.LBB28:
+  43:i2c/i2c.c     ****   index =0;
+ 958              		.loc 1 43 0
+ 959 001c C0F20007 		movt	r7, #:upper16:.LANCHOR0
+  44:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 960              		.loc 1 44 0
+ 961 0020 C0F20009 		movt	r9, #:upper16:index
+  45:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 962              		.loc 1 45 0
+ 963 0024 C0F20008 		movt	r8, #:upper16:mode
+  46:i2c/i2c.c     **** }
+ 964              		.loc 1 46 0
+ 965 0028 4FF4A840 		mov	r0, #21504
+ 966              	.LVL47:
+  43:i2c/i2c.c     ****   index =0;
+ 967              		.loc 1 43 0
+ 968 002c 0026     		movs	r6, #0
+  46:i2c/i2c.c     **** }
+ 969              		.loc 1 46 0
+ 970 002e 2146     		mov	r1, r4
+ 971 0030 C4F20000 		movt	r0, 16384
+ 972              	.LBE28:
+ 973              	.LBE30:
+ 254:i2c/i2c.c     ****   buffer->data[0]= addr;
+ 974              		.loc 1 254 0
+ 975 0034 85F86440 		strb	r4, [r5, #100]
+ 976              	.LBB31:
+ 977              	.LBB29:
+  43:i2c/i2c.c     ****   index =0;
+ 978              		.loc 1 43 0
+ 979 0038 3E70     		strb	r6, [r7]
+  44:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 980              		.loc 1 44 0
+ 981 003a 89F80060 		strb	r6, [r9]
+  45:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 982              		.loc 1 45 0
+ 983 003e 88F80060 		strb	r6, [r8]
+  46:i2c/i2c.c     **** }
+ 984              		.loc 1 46 0
+ 985 0042 FFF7FEFF 		bl	I2C_Cmd
+ 986              	.LVL48:
+ 987              	.LBE29:
+ 988              	.LBE31:
+ 256:i2c/i2c.c     ****   I2C_StartTx();
+ 257:i2c/i2c.c     ****   I2C_GenerateSTART(I2C1,ENABLE);
+ 989              		.loc 1 257 0
+ 990 0046 4FF4A840 		mov	r0, #21504
+ 991 004a 2146     		mov	r1, r4
+ 992 004c C4F20000 		movt	r0, 16384
+ 993 0050 FFF7FEFF 		bl	I2C_GenerateSTART
+ 994              	.LVL49:
+ 995 0054 3B78     		ldrb	r3, [r7]	@ zero_extendqisi2
+ 996 0056 03B9     		cbnz	r3, .L52
+ 997              	.L53:
+ 998 0058 FEE7     		b	.L53
+ 999              	.L52:
+ 1000              	.LVL50:
+ 1001              	.LBB32:
+ 1002              	.LBB33:
+  50:i2c/i2c.c     ****   index =0;
+ 1003              		.loc 1 50 0
+ 1004 005a 40F20007 		movw	r7, #:lower16:.LANCHOR1
+  53:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 1005              		.loc 1 53 0
+ 1006 005e 40F20003 		movw	r3, #:lower16:len
+ 1007 0062 C0F20003 		movt	r3, #:upper16:len
+  50:i2c/i2c.c     ****   index =0;
+ 1008              		.loc 1 50 0
+ 1009 0066 C0F20007 		movt	r7, #:upper16:.LANCHOR1
+  54:i2c/i2c.c     **** }
+ 1010              		.loc 1 54 0
+ 1011 006a 4FF4A840 		mov	r0, #21504
+ 1012 006e C4F20000 		movt	r0, 16384
+ 1013 0072 2146     		mov	r1, r4
+  53:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 1014              		.loc 1 53 0
+ 1015 0074 1C70     		strb	r4, [r3]
+  51:i2c/i2c.c     ****   mode = I2C_Direction_Receiver;
+ 1016              		.loc 1 51 0
+ 1017 0076 89F80060 		strb	r6, [r9]
+  52:i2c/i2c.c     ****   len = leng;
+ 1018              		.loc 1 52 0
+ 1019 007a 88F80040 		strb	r4, [r8]
+  50:i2c/i2c.c     ****   index =0;
+ 1020              		.loc 1 50 0
+ 1021 007e 3E70     		strb	r6, [r7]
+  54:i2c/i2c.c     **** }
+ 1022              		.loc 1 54 0
+ 1023 0080 FFF7FEFF 		bl	I2C_Cmd
+ 1024              	.LVL51:
+ 1025              	.LBE33:
+ 1026              	.LBE32:
+ 258:i2c/i2c.c     ****   while(!I2C_GetTxFlag());
+ 259:i2c/i2c.c     **** 
+ 260:i2c/i2c.c     ****   I2C_StartRx(1);
+ 261:i2c/i2c.c     ****   I2C_GenerateSTART(I2C1,ENABLE);
+ 1027              		.loc 1 261 0
+ 1028 0084 4FF4A840 		mov	r0, #21504
+ 1029 0088 2146     		mov	r1, r4
+ 1030 008a C4F20000 		movt	r0, 16384
+ 1031 008e FFF7FEFF 		bl	I2C_GenerateSTART
+ 1032              	.LVL52:
+ 1033 0092 3B78     		ldrb	r3, [r7]	@ zero_extendqisi2
+ 1034 0094 03B9     		cbnz	r3, .L54
+ 1035              	.L55:
+ 1036 0096 FEE7     		b	.L55
+ 1037              	.L54:
+ 1038              	.LVL53:
+ 262:i2c/i2c.c     **** 
+ 263:i2c/i2c.c     ****   while(!I2C_GetRxFlag());
+ 264:i2c/i2c.c     ****   data = buffer->data[0];
+ 265:i2c/i2c.c     ****   return data;
+ 266:i2c/i2c.c     **** }
+ 1039              		.loc 1 266 0
+ 1040 0098 2878     		ldrb	r0, [r5]	@ zero_extendqisi2
+ 1041 009a BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 1042              		.cfi_endproc
+ 1043              	.LFE132:
+ 1045 009e 00BF     		.section	.text.I2C_ByteWrite,"ax",%progbits
+ 1046              		.align	2
+ 1047              		.global	I2C_ByteWrite
+ 1048              		.thumb
+ 1049              		.thumb_func
+ 1051              	I2C_ByteWrite:
+ 1052              	.LFB133:
+ 267:i2c/i2c.c     **** 
+ 268:i2c/i2c.c     **** 
+ 269:i2c/i2c.c     **** void I2C_ByteWrite(uint8_t addr, uint8_t data)
+ 270:i2c/i2c.c     **** {
+ 1053              		.loc 1 270 0
+ 1054              		.cfi_startproc
+ 1055              		@ args = 0, pretend = 0, frame = 0
+ 1056              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1057              	.LVL54:
+ 1058 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 1059              	.LCFI7:
+ 1060              		.cfi_def_cfa_offset 24
+ 1061              		.cfi_offset 3, -24
+ 1062              		.cfi_offset 4, -20
+ 1063              		.cfi_offset 5, -16
+ 1064              		.cfi_offset 6, -12
+ 1065              		.cfi_offset 7, -8
+ 1066              		.cfi_offset 14, -4
+ 271:i2c/i2c.c     ****   I2C_buffer * buffer;
+ 272:i2c/i2c.c     ****  //while(I2C_GetFlagStatus(I2C1,I2C_FLAG_BUSY));
+ 273:i2c/i2c.c     ****   buffer = I2C_GetBuffer();
+ 274:i2c/i2c.c     ****   buffer->len = 2;
+ 1067              		.loc 1 274 0
+ 1068 0002 40F20003 		movw	r3, #:lower16:buffer
+ 1069 0006 C0F20003 		movt	r3, #:upper16:buffer
+ 1070              	.LBB34:
+ 1071              	.LBB35:
+  43:i2c/i2c.c     ****   index =0;
+ 1072              		.loc 1 43 0
+ 1073 000a 40F20004 		movw	r4, #:lower16:.LANCHOR0
+  44:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 1074              		.loc 1 44 0
+ 1075 000e 40F20006 		movw	r6, #:lower16:index
+  45:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 1076              		.loc 1 45 0
+ 1077 0012 40F20002 		movw	r2, #:lower16:mode
+ 1078              	.LBE35:
+ 1079              	.LBE34:
+ 275:i2c/i2c.c     ****   buffer->data[0]= addr;
+ 1080              		.loc 1 275 0
+ 1081 0016 1870     		strb	r0, [r3]
+ 1082              	.LBB39:
+ 1083              	.LBB36:
+  45:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 1084              		.loc 1 45 0
+ 1085 0018 C0F20002 		movt	r2, #:upper16:mode
+  43:i2c/i2c.c     ****   index =0;
+ 1086              		.loc 1 43 0
+ 1087 001c C0F20004 		movt	r4, #:upper16:.LANCHOR0
+  44:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 1088              		.loc 1 44 0
+ 1089 0020 C0F20006 		movt	r6, #:upper16:index
+  46:i2c/i2c.c     **** }
+ 1090              		.loc 1 46 0
+ 1091 0024 4FF4A840 		mov	r0, #21504
+ 1092              	.LVL55:
+ 1093              	.LBE36:
+ 1094              	.LBE39:
+ 276:i2c/i2c.c     ****   buffer->data[1]= data;
+ 1095              		.loc 1 276 0
+ 1096 0028 5970     		strb	r1, [r3, #1]
+ 1097              	.LBB40:
+ 1098              	.LBB37:
+  43:i2c/i2c.c     ****   index =0;
+ 1099              		.loc 1 43 0
+ 1100 002a 0025     		movs	r5, #0
+  46:i2c/i2c.c     **** }
+ 1101              		.loc 1 46 0
+ 1102 002c C4F20000 		movt	r0, 16384
+ 1103 0030 0121     		movs	r1, #1
+ 1104              	.LVL56:
+ 1105              	.LBE37:
+ 1106              	.LBE40:
+ 274:i2c/i2c.c     ****   buffer->data[0]= addr;
+ 1107              		.loc 1 274 0
+ 1108 0032 0227     		movs	r7, #2
+ 1109 0034 83F86470 		strb	r7, [r3, #100]
+ 1110              	.LBB41:
+ 1111              	.LBB38:
+  45:i2c/i2c.c     ****   I2C_Cmd(I2C1, ENABLE);
+ 1112              		.loc 1 45 0
+ 1113 0038 1570     		strb	r5, [r2]
+  43:i2c/i2c.c     ****   index =0;
+ 1114              		.loc 1 43 0
+ 1115 003a 2570     		strb	r5, [r4]
+  44:i2c/i2c.c     ****   mode = I2C_Direction_Transmitter;
+ 1116              		.loc 1 44 0
+ 1117 003c 3570     		strb	r5, [r6]
+  46:i2c/i2c.c     **** }
+ 1118              		.loc 1 46 0
+ 1119 003e FFF7FEFF 		bl	I2C_Cmd
+ 1120              	.LVL57:
+ 1121              	.LBE38:
+ 1122              	.LBE41:
+ 277:i2c/i2c.c     ****   I2C_StartTx();
+ 278:i2c/i2c.c     ****   I2C_GenerateSTART(I2C1,ENABLE);
+ 1123              		.loc 1 278 0
+ 1124 0042 4FF4A840 		mov	r0, #21504
+ 1125 0046 C4F20000 		movt	r0, 16384
+ 1126 004a 0121     		movs	r1, #1
+ 1127 004c FFF7FEFF 		bl	I2C_GenerateSTART
+ 1128              	.LVL58:
+ 1129 0050 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 1130 0052 03B9     		cbnz	r3, .L56
+ 1131              	.L58:
+ 1132 0054 FEE7     		b	.L58
+ 1133              	.L56:
+ 1134 0056 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 1135              		.cfi_endproc
+ 1136              	.LFE133:
+ 1138              		.global	n
+ 1139              		.comm	buffer,102,4
+ 1140              		.global	TxComplete_f
+ 1141              		.global	RxComplete_f
+ 1142              		.comm	TX_OK,1,1
+ 1143              		.comm	RX_Buffer,100,4
+ 1144              		.comm	MasterTxBuffer,3,4
+ 1145              		.comm	byte2Read,1,1
+ 1146              		.comm	len,1,1
+ 1147              		.comm	mode,1,1
+ 1148              		.comm	index,1,1
+ 1149              		.global	Event
+ 1150              		.section	.bss.TxComplete_f,"aw",%nobits
+ 1151              		.set	.LANCHOR0,. + 0
+ 1154              	TxComplete_f:
+ 1155 0000 00       		.space	1
+ 1156              		.section	.bss.n,"aw",%nobits
+ 1157              		.align	2
+ 1160              	n:
+ 1161 0000 00000000 		.space	4
+ 1162              		.section	.bss.Event,"aw",%nobits
+ 1163              		.align	2
+ 1164              		.set	.LANCHOR2,. + 0
+ 1167              	Event:
+ 1168 0000 00000000 		.space	4
+ 1169              		.section	.bss.RxComplete_f,"aw",%nobits
+ 1170              		.set	.LANCHOR1,. + 0
+ 1173              	RxComplete_f:
+ 1174 0000 00       		.space	1
+ 1175              		.text
+ 1176              	.Letext0:
+ 1177              		.file 2 "/opt/toolchains/eabi/arm-2014.05/arm-none-eabi/include/stdint.h"
+ 1178              		.file 3 "inc/stm32f4xx.h"
+ 1179              		.file 4 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_i2c.h"
+ 1180              		.file 5 "Libraries/STM32F4xx_StdPeriph_Driver/inc/misc.h"
+ 1181              		.file 6 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_gpio.h"
+ 1182              		.file 7 "i2c/i2c.h"
+ 1183              		.file 8 "Libraries/CMSIS/Include/core_cm4.h"
+ 1184              		.file 9 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_rcc.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 i2c.c
+     /tmp/ccmeJSuP.s:21     .text.I2C_GetTxFlag:00000000 $t
+     /tmp/ccmeJSuP.s:26     .text.I2C_GetTxFlag:00000000 I2C_GetTxFlag
+     /tmp/ccmeJSuP.s:1151   .bss.TxComplete_f:00000000 .LANCHOR0
+     /tmp/ccmeJSuP.s:44     .text.I2C_GetRxFlag:00000000 $t
+     /tmp/ccmeJSuP.s:49     .text.I2C_GetRxFlag:00000000 I2C_GetRxFlag
+     /tmp/ccmeJSuP.s:1170   .bss.RxComplete_f:00000000 .LANCHOR1
+     /tmp/ccmeJSuP.s:66     .text.I2C_StopReceived:00000000 $t
+     /tmp/ccmeJSuP.s:71     .text.I2C_StopReceived:00000000 I2C_StopReceived
+                            *COM*:00000001 index
+     /tmp/ccmeJSuP.s:99     .text.I2C_GetBuffer:00000000 $t
+     /tmp/ccmeJSuP.s:104    .text.I2C_GetBuffer:00000000 I2C_GetBuffer
+                            *COM*:00000066 buffer
+     /tmp/ccmeJSuP.s:120    .text.I2C_StartTx:00000000 $t
+     /tmp/ccmeJSuP.s:125    .text.I2C_StartTx:00000000 I2C_StartTx
+                            *COM*:00000001 mode
+     /tmp/ccmeJSuP.s:170    .text.I2C_StartRx:00000000 $t
+     /tmp/ccmeJSuP.s:175    .text.I2C_StartRx:00000000 I2C_StartRx
+                            *COM*:00000001 len
+     /tmp/ccmeJSuP.s:231    .text.I2C_Configuration:00000000 $t
+     /tmp/ccmeJSuP.s:236    .text.I2C_Configuration:00000000 I2C_Configuration
+     /tmp/ccmeJSuP.s:415    .text.I2C1_ER_IRQHandler:00000000 $t
+     /tmp/ccmeJSuP.s:420    .text.I2C1_ER_IRQHandler:00000000 I2C1_ER_IRQHandler
+     /tmp/ccmeJSuP.s:469    .text.I2C1_EV_IRQHandler:00000000 $t
+     /tmp/ccmeJSuP.s:474    .text.I2C1_EV_IRQHandler:00000000 I2C1_EV_IRQHandler
+     /tmp/ccmeJSuP.s:1164   .bss.Event:00000000 .LANCHOR2
+                            *COM*:00000001 byte2Read
+     /tmp/ccmeJSuP.s:916    .text.I2C_ByteRead:00000000 $t
+     /tmp/ccmeJSuP.s:921    .text.I2C_ByteRead:00000000 I2C_ByteRead
+     /tmp/ccmeJSuP.s:1046   .text.I2C_ByteWrite:00000000 $t
+     /tmp/ccmeJSuP.s:1051   .text.I2C_ByteWrite:00000000 I2C_ByteWrite
+     /tmp/ccmeJSuP.s:1160   .bss.n:00000000 n
+     /tmp/ccmeJSuP.s:1154   .bss.TxComplete_f:00000000 TxComplete_f
+     /tmp/ccmeJSuP.s:1173   .bss.RxComplete_f:00000000 RxComplete_f
+                            *COM*:00000001 TX_OK
+                            *COM*:00000064 RX_Buffer
+                            *COM*:00000003 MasterTxBuffer
+     /tmp/ccmeJSuP.s:1167   .bss.Event:00000000 Event
+     /tmp/ccmeJSuP.s:1155   .bss.TxComplete_f:00000000 $d
+     /tmp/ccmeJSuP.s:1157   .bss.n:00000000 $d
+     /tmp/ccmeJSuP.s:1163   .bss.Event:00000000 $d
+     /tmp/ccmeJSuP.s:1174   .bss.RxComplete_f:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+I2C_Cmd
+RCC_APB1PeriphClockCmd
+RCC_AHB1PeriphClockCmd
+RCC_APB1PeriphResetCmd
+GPIO_Init
+GPIO_PinAFConfig
+NVIC_PriorityGroupConfig
+NVIC_Init
+I2C_DeInit
+I2C_Init
+I2C_ITConfig
+I2C_GetITStatus
+I2C_ReadRegister
+I2C_ClearITPendingBit
+I2C_GetLastEvent
+I2C_Send7bitAddress
+I2C_SendData
+I2C_GenerateSTOP
+I2C_GetFlagStatus
+I2C_ReceiveData
+I2C_AcknowledgeConfig
+I2C_GenerateSTART

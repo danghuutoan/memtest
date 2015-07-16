@@ -1,0 +1,1629 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.eabi_attribute 27, 3
+   4              		.eabi_attribute 28, 1
+   5              		.fpu fpv4-sp-d16
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 2
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.thumb
+  16              		.file	"main.c"
+  17              		.text
+  18              	.Ltext0:
+  19              		.cfi_sections	.debug_frame
+  20              		.section	.text.vTask2,"ax",%progbits
+  21              		.align	2
+  22              		.global	vTask2
+  23              		.thumb
+  24              		.thumb_func
+  26              	vTask2:
+  27              	.LFB126:
+  28              		.file 1 "src/main.c"
+   1:src/main.c    **** /**
+   2:src/main.c    ****   ******************************************************************************
+   3:src/main.c    ****   * @file    IO_Toggle/main.c 
+   4:src/main.c    ****   * @author  MCD Application Team
+   5:src/main.c    ****   * @version V1.0.0
+   6:src/main.c    ****   * @date    19-September-2011
+   7:src/main.c    ****   * @brief   Main program body
+   8:src/main.c    ****   ******************************************************************************
+   9:src/main.c    ****   * @attention
+  10:src/main.c    ****   *
+  11:src/main.c    ****   * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+  12:src/main.c    ****   * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+  13:src/main.c    ****   * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+  14:src/main.c    ****   * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+  15:src/main.c    ****   * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+  16:src/main.c    ****   * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+  17:src/main.c    ****   *
+  18:src/main.c    ****   * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+  19:src/main.c    ****   ******************************************************************************  
+  20:src/main.c    ****   */ 
+  21:src/main.c    **** #include <stdint.h>
+  22:src/main.c    **** /* Includes ------------------------------------------------------------------*/
+  23:src/main.c    **** #include "stm32f4xx.h"
+  24:src/main.c    **** #include "stm32f4xx_gpio.h"
+  25:src/main.c    **** #include "stm32f4xx_rcc.h"
+  26:src/main.c    **** #include "led.h"
+  27:src/main.c    **** #include "spi.h"
+  28:src/main.c    **** #include "i2c.h"
+  29:src/main.c    **** #include "register_map.h"
+  30:src/main.c    **** #include "usart.h"
+  31:src/main.c    **** #include "fifo.h"
+  32:src/main.c    **** #include <stdio.h>
+  33:src/main.c    **** #include "FreeRTOSConfig.h"
+  34:src/main.c    **** #include "FreeRTOS.h"
+  35:src/main.c    **** #include "task.h"
+  36:src/main.c    **** #include "list.h"
+  37:src/main.c    **** #include "timers.h"
+  38:src/main.c    **** 
+  39:src/main.c    **** /** @addtogroup STM32F4_Discovery_Peripheral_Examples
+  40:src/main.c    ****   * @{
+  41:src/main.c    ****   */
+  42:src/main.c    **** 
+  43:src/main.c    **** /** @addtogroup IO_Toggle
+  44:src/main.c    ****   * @{
+  45:src/main.c    ****   */ 
+  46:src/main.c    **** 
+  47:src/main.c    **** /* Private typedef -----------------------------------------------------------*/
+  48:src/main.c    **** GPIO_InitTypeDef  GPIO_InitStructure;
+  49:src/main.c    **** 
+  50:src/main.c    **** /* Private define ------------------------------------------------------------*/
+  51:src/main.c    **** /* Private macro -------------------------------------------------------------*/
+  52:src/main.c    **** /* Private variables ---------------------------------------------------------*/
+  53:src/main.c    **** /* Private function prototypes -----------------------------------------------*/
+  54:src/main.c    **** void vTask1( void * pvParameters );
+  55:src/main.c    **** void vTask2( void * pvParameters );
+  56:src/main.c    **** int vFuncCallMalloc(void)
+  57:src/main.c    **** {
+  58:src/main.c    **** 	uint8_t* ptr;
+  59:src/main.c    **** 	static uint16_t j =1;
+  60:src/main.c    **** 	uint8_t i;
+  61:src/main.c    **** //	ptr = pvPortMalloc(j*sizeof(uint8_t));
+  62:src/main.c    **** //	if(ptr == NULL)
+  63:src/main.c    **** //	{
+  64:src/main.c    **** //		return -1;
+  65:src/main.c    **** //	}
+  66:src/main.c    **** 	vDebugPrintf("malloc %d bytes \r\n",j);
+  67:src/main.c    **** 	for(i =0;i<j;i++)
+  68:src/main.c    **** 		{
+  69:src/main.c    **** 			*ptr = i;
+  70:src/main.c    **** 			ptr++;
+  71:src/main.c    **** 		}
+  72:src/main.c    **** 	j++;
+  73:src/main.c    **** 	return 1;
+  74:src/main.c    **** 	//vPortFree(ptr);
+  75:src/main.c    **** 	/*do notthing*/
+  76:src/main.c    **** }
+  77:src/main.c    **** /* Private functions ---------------------------------------------------------*/
+  78:src/main.c    **** 
+  79:src/main.c    **** /**
+  80:src/main.c    ****   * @brief  Main program
+  81:src/main.c    ****   * @param  None
+  82:src/main.c    ****   * @retval None
+  83:src/main.c    ****   */
+  84:src/main.c    **** 
+  85:src/main.c    **** 
+  86:src/main.c    **** 
+  87:src/main.c    **** 
+  88:src/main.c    **** int main(void)
+  89:src/main.c    **** {
+  90:src/main.c    **** 
+  91:src/main.c    **** 
+  92:src/main.c    **** 
+  93:src/main.c    ****     InitFifo();
+  94:src/main.c    ****     USART_Config();
+  95:src/main.c    **** 	LED_Init();
+  96:src/main.c    **** 	 vDebugPrintf("hello %d %d\n\r", 1000,2000);
+  97:src/main.c    **** 	 xTaskCreate(	vTask1,"Task1",200,NULL,1,NULL);
+  98:src/main.c    **** 	 xTaskCreate(	vTask2,"Task2",200,NULL,1,NULL);
+  99:src/main.c    **** 
+ 100:src/main.c    **** 	 vTaskStartScheduler();
+ 101:src/main.c    **** 	 for(;;);
+ 102:src/main.c    **** 
+ 103:src/main.c    **** }
+ 104:src/main.c    **** 
+ 105:src/main.c    **** 
+ 106:src/main.c    **** void vTask1( void * pvParameters )
+ 107:src/main.c    **** {
+ 108:src/main.c    **** 
+ 109:src/main.c    **** 	for(;;)
+ 110:src/main.c    **** 	{
+ 111:src/main.c    **** 
+ 112:src/main.c    **** 		LED_On();
+ 113:src/main.c    **** 		vDebugPrintf("Task1 is created !!\n\r");
+ 114:src/main.c    **** 		if(vFuncCallMalloc() == -1)
+ 115:src/main.c    **** 			{
+ 116:src/main.c    **** 				vDebugPrintf("out of stack \n\r");
+ 117:src/main.c    **** 			}
+ 118:src/main.c    **** 		vTaskDelay(1);
+ 119:src/main.c    **** 	}
+ 120:src/main.c    **** }
+ 121:src/main.c    **** void vTask2( void * pvParameters )
+ 122:src/main.c    **** {
+  29              		.loc 1 122 0
+  30              		.cfi_startproc
+  31              		@ Volatile: function does not return.
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              	.LVL0:
+  35 0000 08B5     		push	{r3, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 8
+  38              		.cfi_offset 3, -8
+  39              		.cfi_offset 14, -4
+  40 0002 40F20004 		movw	r4, #:lower16:.LANCHOR0
+  41 0006 C0F20004 		movt	r4, #:upper16:.LANCHOR0
+  42              	.LVL1:
+  43              	.L4:
+ 123:src/main.c    **** 	for(;;)
+ 124:src/main.c    **** 	{
+ 125:src/main.c    **** 		LED_On();
+  44              		.loc 1 125 0
+  45 000a FFF7FEFF 		bl	LED_On
+  46              	.LVL2:
+ 126:src/main.c    **** 		vDebugPrintf("Task2 is created !!\n\r");
+  47              		.loc 1 126 0
+  48 000e 40F20000 		movw	r0, #:lower16:.LC0
+  49 0012 C0F20000 		movt	r0, #:upper16:.LC0
+  50 0016 FFF7FEFF 		bl	vDebugPrintf
+  51              	.LVL3:
+  52              	.LBB4:
+  53              	.LBB5:
+  66:src/main.c    **** 	for(i =0;i<j;i++)
+  54              		.loc 1 66 0
+  55 001a 40F20000 		movw	r0, #:lower16:.LC1
+  56 001e C0F20000 		movt	r0, #:upper16:.LC1
+  57 0022 2188     		ldrh	r1, [r4]
+  58 0024 FFF7FEFF 		bl	vDebugPrintf
+  59              	.LVL4:
+  67:src/main.c    **** 		{
+  60              		.loc 1 67 0
+  61 0028 2288     		ldrh	r2, [r4]
+  62 002a 22B1     		cbz	r2, .L2
+  63 002c 0023     		movs	r3, #0
+  64              	.LVL5:
+  65              	.L3:
+  66 002e 0133     		adds	r3, r3, #1
+  67              	.LVL6:
+  68 0030 DBB2     		uxtb	r3, r3
+  69              	.LVL7:
+  70 0032 9A42     		cmp	r2, r3
+  71 0034 FBD8     		bhi	.L3
+  72              	.LVL8:
+  73              	.L2:
+  72:src/main.c    **** 	return 1;
+  74              		.loc 1 72 0
+  75 0036 0132     		adds	r2, r2, #1
+  76              	.LBE5:
+  77              	.LBE4:
+ 127:src/main.c    **** 		if(vFuncCallMalloc() == -1)
+ 128:src/main.c    **** 		{
+ 129:src/main.c    **** 			vDebugPrintf("out of stack \n\r");
+ 130:src/main.c    **** 		}
+ 131:src/main.c    **** 		vTaskDelay(1);
+  78              		.loc 1 131 0
+  79 0038 0120     		movs	r0, #1
+  80              	.LBB7:
+  81              	.LBB6:
+  72:src/main.c    **** 	return 1;
+  82              		.loc 1 72 0
+  83 003a 2280     		strh	r2, [r4]	@ movhi
+  84              	.LBE6:
+  85              	.LBE7:
+  86              		.loc 1 131 0
+  87 003c FFF7FEFF 		bl	vTaskDelay
+  88              	.LVL9:
+ 132:src/main.c    **** 	}
+  89              		.loc 1 132 0
+  90 0040 E3E7     		b	.L4
+  91              		.cfi_endproc
+  92              	.LFE126:
+  94 0042 00BF     		.section	.text.vTask1,"ax",%progbits
+  95              		.align	2
+  96              		.global	vTask1
+  97              		.thumb
+  98              		.thumb_func
+ 100              	vTask1:
+ 101              	.LFB125:
+ 107:src/main.c    **** 
+ 102              		.loc 1 107 0
+ 103              		.cfi_startproc
+ 104              		@ Volatile: function does not return.
+ 105              		@ args = 0, pretend = 0, frame = 0
+ 106              		@ frame_needed = 0, uses_anonymous_args = 0
+ 107              	.LVL10:
+ 108 0000 08B5     		push	{r3, lr}
+ 109              	.LCFI1:
+ 110              		.cfi_def_cfa_offset 8
+ 111              		.cfi_offset 3, -8
+ 112              		.cfi_offset 14, -4
+ 113 0002 40F20004 		movw	r4, #:lower16:.LANCHOR0
+ 114 0006 C0F20004 		movt	r4, #:upper16:.LANCHOR0
+ 115              	.LVL11:
+ 116              	.L12:
+ 112:src/main.c    **** 		vDebugPrintf("Task1 is created !!\n\r");
+ 117              		.loc 1 112 0
+ 118 000a FFF7FEFF 		bl	LED_On
+ 119              	.LVL12:
+ 113:src/main.c    **** 		if(vFuncCallMalloc() == -1)
+ 120              		.loc 1 113 0
+ 121 000e 40F20000 		movw	r0, #:lower16:.LC2
+ 122 0012 C0F20000 		movt	r0, #:upper16:.LC2
+ 123 0016 FFF7FEFF 		bl	vDebugPrintf
+ 124              	.LVL13:
+ 125              	.LBB10:
+ 126              	.LBB11:
+  66:src/main.c    **** 	for(i =0;i<j;i++)
+ 127              		.loc 1 66 0
+ 128 001a 40F20000 		movw	r0, #:lower16:.LC1
+ 129 001e C0F20000 		movt	r0, #:upper16:.LC1
+ 130 0022 2188     		ldrh	r1, [r4]
+ 131 0024 FFF7FEFF 		bl	vDebugPrintf
+ 132              	.LVL14:
+  67:src/main.c    **** 		{
+ 133              		.loc 1 67 0
+ 134 0028 2288     		ldrh	r2, [r4]
+ 135 002a 22B1     		cbz	r2, .L10
+ 136 002c 0023     		movs	r3, #0
+ 137              	.LVL15:
+ 138              	.L11:
+ 139 002e 0133     		adds	r3, r3, #1
+ 140              	.LVL16:
+ 141 0030 DBB2     		uxtb	r3, r3
+ 142              	.LVL17:
+ 143 0032 9A42     		cmp	r2, r3
+ 144 0034 FBD8     		bhi	.L11
+ 145              	.LVL18:
+ 146              	.L10:
+  72:src/main.c    **** 	return 1;
+ 147              		.loc 1 72 0
+ 148 0036 0132     		adds	r2, r2, #1
+ 149              	.LBE11:
+ 150              	.LBE10:
+ 118:src/main.c    **** 	}
+ 151              		.loc 1 118 0
+ 152 0038 0120     		movs	r0, #1
+ 153              	.LBB13:
+ 154              	.LBB12:
+  72:src/main.c    **** 	return 1;
+ 155              		.loc 1 72 0
+ 156 003a 2280     		strh	r2, [r4]	@ movhi
+ 157              	.LBE12:
+ 158              	.LBE13:
+ 118:src/main.c    **** 	}
+ 159              		.loc 1 118 0
+ 160 003c FFF7FEFF 		bl	vTaskDelay
+ 161              	.LVL19:
+ 119:src/main.c    **** }
+ 162              		.loc 1 119 0
+ 163 0040 E3E7     		b	.L12
+ 164              		.cfi_endproc
+ 165              	.LFE125:
+ 167 0042 00BF     		.section	.text.vFuncCallMalloc,"ax",%progbits
+ 168              		.align	2
+ 169              		.global	vFuncCallMalloc
+ 170              		.thumb
+ 171              		.thumb_func
+ 173              	vFuncCallMalloc:
+ 174              	.LFB123:
+  57:src/main.c    **** 	uint8_t* ptr;
+ 175              		.loc 1 57 0
+ 176              		.cfi_startproc
+ 177              		@ args = 0, pretend = 0, frame = 0
+ 178              		@ frame_needed = 0, uses_anonymous_args = 0
+ 179 0000 10B5     		push	{r4, lr}
+ 180              	.LCFI2:
+ 181              		.cfi_def_cfa_offset 8
+ 182              		.cfi_offset 4, -8
+ 183              		.cfi_offset 14, -4
+  66:src/main.c    **** 	for(i =0;i<j;i++)
+ 184              		.loc 1 66 0
+ 185 0002 40F20004 		movw	r4, #:lower16:.LANCHOR0
+ 186 0006 C0F20004 		movt	r4, #:upper16:.LANCHOR0
+ 187 000a 40F20000 		movw	r0, #:lower16:.LC1
+ 188 000e 2188     		ldrh	r1, [r4]
+ 189 0010 C0F20000 		movt	r0, #:upper16:.LC1
+ 190 0014 FFF7FEFF 		bl	vDebugPrintf
+ 191              	.LVL20:
+  67:src/main.c    **** 		{
+ 192              		.loc 1 67 0
+ 193 0018 2288     		ldrh	r2, [r4]
+ 194 001a 22B1     		cbz	r2, .L17
+ 195 001c 0023     		movs	r3, #0
+ 196              	.LVL21:
+ 197              	.L18:
+  67:src/main.c    **** 		{
+ 198              		.loc 1 67 0 is_stmt 0 discriminator 2
+ 199 001e 0133     		adds	r3, r3, #1
+ 200              	.LVL22:
+ 201 0020 DBB2     		uxtb	r3, r3
+ 202              	.LVL23:
+ 203 0022 9342     		cmp	r3, r2
+ 204 0024 FBD3     		bcc	.L18
+ 205              	.LVL24:
+ 206              	.L17:
+  72:src/main.c    **** 	return 1;
+ 207              		.loc 1 72 0 is_stmt 1
+ 208 0026 0132     		adds	r2, r2, #1
+ 209 0028 2280     		strh	r2, [r4]	@ movhi
+  76:src/main.c    **** /* Private functions ---------------------------------------------------------*/
+ 210              		.loc 1 76 0
+ 211 002a 0120     		movs	r0, #1
+ 212 002c 10BD     		pop	{r4, pc}
+ 213              		.cfi_endproc
+ 214              	.LFE123:
+ 216 002e 00BF     		.section	.text.startup.main,"ax",%progbits
+ 217              		.align	2
+ 218              		.global	main
+ 219              		.thumb
+ 220              		.thumb_func
+ 222              	main:
+ 223              	.LFB124:
+  89:src/main.c    **** 
+ 224              		.loc 1 89 0
+ 225              		.cfi_startproc
+ 226              		@ Volatile: function does not return.
+ 227              		@ args = 0, pretend = 0, frame = 0
+ 228              		@ frame_needed = 0, uses_anonymous_args = 0
+ 229 0000 00B5     		push	{lr}
+ 230              	.LCFI3:
+ 231              		.cfi_def_cfa_offset 4
+ 232              		.cfi_offset 14, -4
+ 233 0002 85B0     		sub	sp, sp, #20
+ 234              	.LCFI4:
+ 235              		.cfi_def_cfa_offset 24
+  93:src/main.c    ****     USART_Config();
+ 236              		.loc 1 93 0
+ 237 0004 FFF7FEFF 		bl	InitFifo
+ 238              	.LVL25:
+  94:src/main.c    **** 	LED_Init();
+ 239              		.loc 1 94 0
+ 240 0008 FFF7FEFF 		bl	USART_Config
+ 241              	.LVL26:
+  95:src/main.c    **** 	 vDebugPrintf("hello %d %d\n\r", 1000,2000);
+ 242              		.loc 1 95 0
+ 243 000c FFF7FEFF 		bl	LED_Init
+ 244              	.LVL27:
+  96:src/main.c    **** 	 xTaskCreate(	vTask1,"Task1",200,NULL,1,NULL);
+ 245              		.loc 1 96 0
+ 246 0010 40F20000 		movw	r0, #:lower16:.LC3
+ 247 0014 C0F20000 		movt	r0, #:upper16:.LC3
+ 248 0018 4FF47A71 		mov	r1, #1000
+ 249 001c 4FF4FA62 		mov	r2, #2000
+ 250 0020 FFF7FEFF 		bl	vDebugPrintf
+ 251              	.LVL28:
+  97:src/main.c    **** 	 xTaskCreate(	vTask2,"Task2",200,NULL,1,NULL);
+ 252              		.loc 1 97 0
+ 253 0024 0024     		movs	r4, #0
+ 254 0026 0125     		movs	r5, #1
+ 255 0028 40F20000 		movw	r0, #:lower16:vTask1
+ 256 002c 40F20001 		movw	r1, #:lower16:.LC4
+ 257 0030 2346     		mov	r3, r4
+ 258 0032 C0F20001 		movt	r1, #:upper16:.LC4
+ 259 0036 C822     		movs	r2, #200
+ 260 0038 0095     		str	r5, [sp]
+ 261 003a 0194     		str	r4, [sp, #4]
+ 262 003c 0294     		str	r4, [sp, #8]
+ 263 003e 0394     		str	r4, [sp, #12]
+ 264 0040 C0F20000 		movt	r0, #:upper16:vTask1
+ 265 0044 FFF7FEFF 		bl	xTaskGenericCreate
+ 266              	.LVL29:
+  98:src/main.c    **** 
+ 267              		.loc 1 98 0
+ 268 0048 40F20000 		movw	r0, #:lower16:vTask2
+ 269 004c 40F20001 		movw	r1, #:lower16:.LC5
+ 270 0050 2346     		mov	r3, r4
+ 271 0052 C0F20001 		movt	r1, #:upper16:.LC5
+ 272 0056 C822     		movs	r2, #200
+ 273 0058 0095     		str	r5, [sp]
+ 274 005a 0194     		str	r4, [sp, #4]
+ 275 005c 0294     		str	r4, [sp, #8]
+ 276 005e 0394     		str	r4, [sp, #12]
+ 277 0060 C0F20000 		movt	r0, #:upper16:vTask2
+ 278 0064 FFF7FEFF 		bl	xTaskGenericCreate
+ 279              	.LVL30:
+ 100:src/main.c    **** 	 for(;;);
+ 280              		.loc 1 100 0
+ 281 0068 FFF7FEFF 		bl	vTaskStartScheduler
+ 282              	.LVL31:
+ 283              	.L23:
+ 284 006c FEE7     		b	.L23
+ 285              		.cfi_endproc
+ 286              	.LFE124:
+ 288 006e 00BF     		.section	.text.assert_failed,"ax",%progbits
+ 289              		.align	2
+ 290              		.global	assert_failed
+ 291              		.thumb
+ 292              		.thumb_func
+ 294              	assert_failed:
+ 295              	.LFB127:
+ 133:src/main.c    **** }
+ 134:src/main.c    **** /**
+ 135:src/main.c    ****   * @brief  Delay Function.
+ 136:src/main.c    ****   * @param  nCount:specifies the Delay time length.
+ 137:src/main.c    ****   * @retval None
+ 138:src/main.c    ****   */
+ 139:src/main.c    **** 
+ 140:src/main.c    **** 
+ 141:src/main.c    **** 
+ 142:src/main.c    **** 
+ 143:src/main.c    **** #ifdef  USE_FULL_ASSERT
+ 144:src/main.c    **** 
+ 145:src/main.c    **** /**
+ 146:src/main.c    ****   * @brief  Reports the name of the source file and the source line number
+ 147:src/main.c    ****   *         where the assert_param error has occurred.
+ 148:src/main.c    ****   * @param  file: pointer to the source file name
+ 149:src/main.c    ****   * @param  line: assert_param error line source number
+ 150:src/main.c    ****   * @retval None
+ 151:src/main.c    ****   */
+ 152:src/main.c    **** void assert_failed(uint8_t* file, uint32_t line)
+ 153:src/main.c    **** { 
+ 296              		.loc 1 153 0
+ 297              		.cfi_startproc
+ 298              		@ Volatile: function does not return.
+ 299              		@ args = 0, pretend = 0, frame = 0
+ 300              		@ frame_needed = 0, uses_anonymous_args = 0
+ 301              		@ link register save eliminated.
+ 302              	.LVL32:
+ 303              	.L25:
+ 304 0000 FEE7     		b	.L25
+ 305              		.cfi_endproc
+ 306              	.LFE127:
+ 308              		.comm	GPIO_InitStructure,8,4
+ 309              		.comm	Fifo,1000,4
+ 310              		.comm	GETPT,4,4
+ 311              		.comm	PUTPT,4,4
+ 312              		.global	Reg_Store
+ 313              		.comm	SPI_MODE,1,1
+ 314 0002 00BF     		.section	.rodata.str1.4,"aMS",%progbits,1
+ 315              		.align	2
+ 316              	.LC0:
+ 317 0000 5461736B 		.ascii	"Task2 is created !!\012\015\000"
+ 317      32206973 
+ 317      20637265 
+ 317      61746564 
+ 317      2021210A 
+ 318 0016 0000     		.space	2
+ 319              	.LC1:
+ 320 0018 6D616C6C 		.ascii	"malloc %d bytes \015\012\000"
+ 320      6F632025 
+ 320      64206279 
+ 320      74657320 
+ 320      0D0A00
+ 321 002b 00       		.space	1
+ 322              	.LC2:
+ 323 002c 5461736B 		.ascii	"Task1 is created !!\012\015\000"
+ 323      31206973 
+ 323      20637265 
+ 323      61746564 
+ 323      2021210A 
+ 324 0042 0000     		.space	2
+ 325              	.LC3:
+ 326 0044 68656C6C 		.ascii	"hello %d %d\012\015\000"
+ 326      6F202564 
+ 326      2025640A 
+ 326      0D00
+ 327 0052 0000     		.space	2
+ 328              	.LC4:
+ 329 0054 5461736B 		.ascii	"Task1\000"
+ 329      3100
+ 330 005a 0000     		.space	2
+ 331              	.LC5:
+ 332 005c 5461736B 		.ascii	"Task2\000"
+ 332      3200
+ 333 0062 0000     		.section	.rodata.Reg_Store,"a",%progbits
+ 334              		.align	2
+ 337              	Reg_Store:
+ 338 0000 00       		.byte	0
+ 339 0001 01       		.byte	1
+ 340 0002 00       		.byte	0
+ 341 0003 01       		.byte	1
+ 342 0004 00       		.byte	0
+ 343 0005 00       		.byte	0
+ 344 0006 02       		.byte	2
+ 345 0007 26       		.byte	38
+ 346 0008 00       		.byte	0
+ 347 0009 03       		.byte	3
+ 348 000a 70       		.byte	112
+ 349 000b 00       		.byte	0
+ 350 000c 04       		.byte	4
+ 351 000d 00       		.byte	0
+ 352 000e 00       		.byte	0
+ 353 000f 05       		.byte	5
+ 354 0010 00       		.byte	0
+ 355 0011 00       		.byte	0
+ 356 0012 06       		.byte	6
+ 357 0013 08       		.byte	8
+ 358 0014 1D       		.byte	29
+ 359 0015 07       		.byte	7
+ 360 0016 20       		.byte	32
+ 361 0017 00       		.byte	0
+ 362 0018 08       		.byte	8
+ 363 0019 10       		.byte	16
+ 364 001a 00       		.byte	0
+ 365 001b 09       		.byte	9
+ 366 001c D2       		.byte	-46
+ 367 001d 00       		.byte	0
+ 368 001e 0A       		.byte	10
+ 369 001f 0C       		.byte	12
+ 370 0020 00       		.byte	0
+ 371 0021 0B       		.byte	11
+ 372 0022 C6       		.byte	-58
+ 373 0023 00       		.byte	0
+ 374 0024 0C       		.byte	12
+ 375 0025 00       		.byte	0
+ 376 0026 00       		.byte	0
+ 377 0027 0D       		.byte	13
+ 378 0028 00       		.byte	0
+ 379 0029 00       		.byte	0
+ 380 002a 0E       		.byte	14
+ 381 002b 00       		.byte	0
+ 382 002c 00       		.byte	0
+ 383 002d 0F       		.byte	15
+ 384 002e 00       		.byte	0
+ 385 002f 00       		.byte	0
+ 386 0030 10       		.byte	16
+ 387 0031 00       		.byte	0
+ 388 0032 00       		.byte	0
+ 389 0033 11       		.byte	17
+ 390 0034 00       		.byte	0
+ 391 0035 00       		.byte	0
+ 392 0036 12       		.byte	18
+ 393 0037 00       		.byte	0
+ 394 0038 00       		.byte	0
+ 395 0039 13       		.byte	19
+ 396 003a 00       		.byte	0
+ 397 003b 00       		.byte	0
+ 398 003c 14       		.byte	20
+ 399 003d 00       		.byte	0
+ 400 003e 00       		.byte	0
+ 401 003f 15       		.byte	21
+ 402 0040 00       		.byte	0
+ 403 0041 00       		.byte	0
+ 404 0042 16       		.byte	22
+ 405 0043 00       		.byte	0
+ 406 0044 00       		.byte	0
+ 407 0045 17       		.byte	23
+ 408 0046 00       		.byte	0
+ 409 0047 00       		.byte	0
+ 410 0048 18       		.byte	24
+ 411 0049 00       		.byte	0
+ 412 004a 00       		.byte	0
+ 413 004b 19       		.byte	25
+ 414 004c 00       		.byte	0
+ 415 004d 00       		.byte	0
+ 416 004e 1A       		.byte	26
+ 417 004f 00       		.byte	0
+ 418 0050 00       		.byte	0
+ 419 0051 1B       		.byte	27
+ 420 0052 70       		.byte	112
+ 421 0053 80       		.byte	-128
+ 422 0054 1C       		.byte	28
+ 423 0055 16       		.byte	22
+ 424 0056 FF       		.byte	-1
+ 425 0057 1D       		.byte	29
+ 426 0058 90       		.byte	-112
+ 427 0059 FF       		.byte	-1
+ 428 005a 1E       		.byte	30
+ 429 005b B0       		.byte	-80
+ 430 005c FF       		.byte	-1
+ 431 005d 1F       		.byte	31
+ 432 005e C0       		.byte	-64
+ 433 005f FF       		.byte	-1
+ 434 0060 20       		.byte	32
+ 435 0061 C0       		.byte	-64
+ 436 0062 FF       		.byte	-1
+ 437 0063 21       		.byte	33
+ 438 0064 C0       		.byte	-64
+ 439 0065 FF       		.byte	-1
+ 440 0066 22       		.byte	34
+ 441 0067 C0       		.byte	-64
+ 442 0068 FF       		.byte	-1
+ 443 0069 23       		.byte	35
+ 444 006a AA       		.byte	-86
+ 445 006b FF       		.byte	-1
+ 446 006c 24       		.byte	36
+ 447 006d 09       		.byte	9
+ 448 006e 1F       		.byte	31
+ 449 006f 25       		.byte	37
+ 450 0070 01       		.byte	1
+ 451 0071 1F       		.byte	31
+ 452 0072 26       		.byte	38
+ 453 0073 03       		.byte	3
+ 454 0074 1F       		.byte	31
+ 455 0075 27       		.byte	39
+ 456 0076 03       		.byte	3
+ 457 0077 1F       		.byte	31
+ 458 0078 28       		.byte	40
+ 459 0079 B5       		.byte	-75
+ 460 007a FF       		.byte	-1
+ 461 007b 29       		.byte	41
+ 462 007c 56       		.byte	86
+ 463 007d 7F       		.byte	127
+ 464 007e 2A       		.byte	42
+ 465 007f 35       		.byte	53
+ 466 0080 3F       		.byte	63
+ 467 0081 2B       		.byte	43
+ 468 0082 00       		.byte	0
+ 469 0083 00       		.byte	0
+ 470 0084 2C       		.byte	44
+ 471 0085 00       		.byte	0
+ 472 0086 00       		.byte	0
+ 473 0087 2D       		.byte	45
+ 474 0088 00       		.byte	0
+ 475 0089 FF       		.byte	-1
+ 476 008a 2E       		.byte	46
+ 477 008b 00       		.byte	0
+ 478 008c FF       		.byte	-1
+ 479 008d 2F       		.byte	47
+ 480 008e 14       		.byte	20
+ 481 008f 3F       		.byte	63
+ 482 0090 30       		.byte	48
+ 483 0091 2F       		.byte	47
+ 484 0092 FF       		.byte	-1
+ 485 0093 31       		.byte	49
+ 486 0094 90       		.byte	-112
+ 487 0095 FF       		.byte	-1
+ 488 0096 32       		.byte	50
+ 489 0097 C5       		.byte	-59
+ 490 0098 FF       		.byte	-1
+ 491 0099 33       		.byte	51
+ 492 009a 07       		.byte	7
+ 493 009b FF       		.byte	-1
+ 494 009c 34       		.byte	52
+ 495 009d 10       		.byte	16
+ 496 009e FF       		.byte	-1
+ 497 009f 35       		.byte	53
+ 498 00a0 00       		.byte	0
+ 499 00a1 FF       		.byte	-1
+ 500 00a2 36       		.byte	54
+ 501 00a3 30       		.byte	48
+ 502 00a4 FF       		.byte	-1
+ 503 00a5 37       		.byte	55
+ 504 00a6 00       		.byte	0
+ 505 00a7 FF       		.byte	-1
+ 506 00a8 38       		.byte	56
+ 507 00a9 00       		.byte	0
+ 508 00aa FF       		.byte	-1
+ 509 00ab 39       		.byte	57
+ 510 00ac 00       		.byte	0
+ 511 00ad FF       		.byte	-1
+ 512 00ae 3A       		.byte	58
+ 513 00af 00       		.byte	0
+ 514 00b0 FF       		.byte	-1
+ 515 00b1 3B       		.byte	59
+ 516 00b2 01       		.byte	1
+ 517 00b3 FF       		.byte	-1
+ 518 00b4 3C       		.byte	60
+ 519 00b5 00       		.byte	0
+ 520 00b6 FF       		.byte	-1
+ 521 00b7 3D       		.byte	61
+ 522 00b8 00       		.byte	0
+ 523 00b9 FF       		.byte	-1
+ 524 00ba 3E       		.byte	62
+ 525 00bb 00       		.byte	0
+ 526 00bc 3F       		.byte	63
+ 527 00bd 3F       		.byte	63
+ 528 00be 10       		.byte	16
+ 529 00bf FF       		.byte	-1
+ 530 00c0 40       		.byte	64
+ 531 00c1 00       		.byte	0
+ 532 00c2 FF       		.byte	-1
+ 533 00c3 41       		.byte	65
+ 534 00c4 30       		.byte	48
+ 535 00c5 FF       		.byte	-1
+ 536 00c6 42       		.byte	66
+ 537 00c7 00       		.byte	0
+ 538 00c8 FF       		.byte	-1
+ 539 00c9 43       		.byte	67
+ 540 00ca 00       		.byte	0
+ 541 00cb FF       		.byte	-1
+ 542 00cc 44       		.byte	68
+ 543 00cd 00       		.byte	0
+ 544 00ce FF       		.byte	-1
+ 545 00cf 45       		.byte	69
+ 546 00d0 00       		.byte	0
+ 547 00d1 FF       		.byte	-1
+ 548 00d2 46       		.byte	70
+ 549 00d3 01       		.byte	1
+ 550 00d4 FF       		.byte	-1
+ 551 00d5 47       		.byte	71
+ 552 00d6 00       		.byte	0
+ 553 00d7 FF       		.byte	-1
+ 554 00d8 48       		.byte	72
+ 555 00d9 00       		.byte	0
+ 556 00da FF       		.byte	-1
+ 557 00db 49       		.byte	73
+ 558 00dc 00       		.byte	0
+ 559 00dd 3F       		.byte	63
+ 560 00de 4A       		.byte	74
+ 561 00df 10       		.byte	16
+ 562 00e0 FF       		.byte	-1
+ 563 00e1 4B       		.byte	75
+ 564 00e2 00       		.byte	0
+ 565 00e3 FF       		.byte	-1
+ 566 00e4 4C       		.byte	76
+ 567 00e5 0A       		.byte	10
+ 568 00e6 FF       		.byte	-1
+ 569 00e7 4D       		.byte	77
+ 570 00e8 00       		.byte	0
+ 571 00e9 FF       		.byte	-1
+ 572 00ea 4E       		.byte	78
+ 573 00eb 00       		.byte	0
+ 574 00ec FF       		.byte	-1
+ 575 00ed 4F       		.byte	79
+ 576 00ee 00       		.byte	0
+ 577 00ef FF       		.byte	-1
+ 578 00f0 50       		.byte	80
+ 579 00f1 00       		.byte	0
+ 580 00f2 FF       		.byte	-1
+ 581 00f3 51       		.byte	81
+ 582 00f4 01       		.byte	1
+ 583 00f5 FF       		.byte	-1
+ 584 00f6 52       		.byte	82
+ 585 00f7 00       		.byte	0
+ 586 00f8 FF       		.byte	-1
+ 587 00f9 53       		.byte	83
+ 588 00fa 00       		.byte	0
+ 589 00fb FF       		.byte	-1
+ 590 00fc 54       		.byte	84
+ 591 00fd 00       		.byte	0
+ 592 00fe 3F       		.byte	63
+ 593 00ff 55       		.byte	85
+ 594 0100 10       		.byte	16
+ 595 0101 FF       		.byte	-1
+ 596 0102 56       		.byte	86
+ 597 0103 00       		.byte	0
+ 598 0104 FF       		.byte	-1
+ 599 0105 57       		.byte	87
+ 600 0106 0A       		.byte	10
+ 601 0107 FF       		.byte	-1
+ 602 0108 58       		.byte	88
+ 603 0109 00       		.byte	0
+ 604 010a FF       		.byte	-1
+ 605 010b 59       		.byte	89
+ 606 010c 00       		.byte	0
+ 607 010d FF       		.byte	-1
+ 608 010e 5A       		.byte	90
+ 609 010f 00       		.byte	0
+ 610 0110 FF       		.byte	-1
+ 611 0111 5B       		.byte	91
+ 612 0112 00       		.byte	0
+ 613 0113 FF       		.byte	-1
+ 614 0114 5C       		.byte	92
+ 615 0115 01       		.byte	1
+ 616 0116 FF       		.byte	-1
+ 617 0117 5D       		.byte	93
+ 618 0118 00       		.byte	0
+ 619 0119 FF       		.byte	-1
+ 620 011a 5E       		.byte	94
+ 621 011b 00       		.byte	0
+ 622 011c FF       		.byte	-1
+ 623 011d 5F       		.byte	95
+ 624 011e 00       		.byte	0
+ 625 011f 3F       		.byte	63
+ 626 0120 60       		.byte	96
+ 627 0121 10       		.byte	16
+ 628 0122 00       		.byte	0
+ 629 0123 61       		.byte	97
+ 630 0124 00       		.byte	0
+ 631 0125 FF       		.byte	-1
+ 632 0126 62       		.byte	98
+ 633 0127 2E       		.byte	46
+ 634 0128 FF       		.byte	-1
+ 635 0129 63       		.byte	99
+ 636 012a 00       		.byte	0
+ 637 012b FF       		.byte	-1
+ 638 012c 64       		.byte	100
+ 639 012d 00       		.byte	0
+ 640 012e FF       		.byte	-1
+ 641 012f 65       		.byte	101
+ 642 0130 00       		.byte	0
+ 643 0131 FF       		.byte	-1
+ 644 0132 66       		.byte	102
+ 645 0133 00       		.byte	0
+ 646 0134 FF       		.byte	-1
+ 647 0135 67       		.byte	103
+ 648 0136 01       		.byte	1
+ 649 0137 FF       		.byte	-1
+ 650 0138 68       		.byte	104
+ 651 0139 00       		.byte	0
+ 652 013a FF       		.byte	-1
+ 653 013b 69       		.byte	105
+ 654 013c 00       		.byte	0
+ 655 013d FF       		.byte	-1
+ 656 013e 6A       		.byte	106
+ 657 013f 80       		.byte	-128
+ 658 0140 BF       		.byte	-65
+ 659 0141 6B       		.byte	107
+ 660 0142 00       		.byte	0
+ 661 0143 FF       		.byte	-1
+ 662 0144 6C       		.byte	108
+ 663 0145 00       		.byte	0
+ 664 0146 FF       		.byte	-1
+ 665 0147 6D       		.byte	109
+ 666 0148 00       		.byte	0
+ 667 0149 FF       		.byte	-1
+ 668 014a 6E       		.byte	110
+ 669 014b 40       		.byte	64
+ 670 014c FF       		.byte	-1
+ 671 014d 6F       		.byte	111
+ 672 014e 00       		.byte	0
+ 673 014f FF       		.byte	-1
+ 674 0150 70       		.byte	112
+ 675 0151 00       		.byte	0
+ 676 0152 FF       		.byte	-1
+ 677 0153 71       		.byte	113
+ 678 0154 00       		.byte	0
+ 679 0155 FF       		.byte	-1
+ 680 0156 72       		.byte	114
+ 681 0157 40       		.byte	64
+ 682 0158 FF       		.byte	-1
+ 683 0159 73       		.byte	115
+ 684 015a 00       		.byte	0
+ 685 015b FF       		.byte	-1
+ 686 015c 74       		.byte	116
+ 687 015d 80       		.byte	-128
+ 688 015e FF       		.byte	-1
+ 689 015f 75       		.byte	117
+ 690 0160 00       		.byte	0
+ 691 0161 FF       		.byte	-1
+ 692 0162 76       		.byte	118
+ 693 0163 40       		.byte	64
+ 694 0164 FF       		.byte	-1
+ 695 0165 77       		.byte	119
+ 696 0166 00       		.byte	0
+ 697 0167 FF       		.byte	-1
+ 698 0168 78       		.byte	120
+ 699 0169 00       		.byte	0
+ 700 016a FF       		.byte	-1
+ 701 016b 79       		.byte	121
+ 702 016c 00       		.byte	0
+ 703 016d FF       		.byte	-1
+ 704 016e 7A       		.byte	122
+ 705 016f 40       		.byte	64
+ 706 0170 FF       		.byte	-1
+ 707 0171 7B       		.byte	123
+ 708 0172 00       		.byte	0
+ 709 0173 FF       		.byte	-1
+ 710 0174 7C       		.byte	124
+ 711 0175 00       		.byte	0
+ 712 0176 FF       		.byte	-1
+ 713 0177 7D       		.byte	125
+ 714 0178 00       		.byte	0
+ 715 0179 FF       		.byte	-1
+ 716 017a 7E       		.byte	126
+ 717 017b 00       		.byte	0
+ 718 017c FF       		.byte	-1
+ 719 017d 7F       		.byte	127
+ 720 017e 00       		.byte	0
+ 721 017f FF       		.byte	-1
+ 722 0180 80       		.byte	-128
+ 723 0181 00       		.byte	0
+ 724 0182 FF       		.byte	-1
+ 725 0183 81       		.byte	-127
+ 726 0184 00       		.byte	0
+ 727 0185 0F       		.byte	15
+ 728 0186 82       		.byte	-126
+ 729 0187 00       		.byte	0
+ 730 0188 0F       		.byte	15
+ 731 0189 83       		.byte	-125
+ 732 018a 00       		.byte	0
+ 733 018b FF       		.byte	-1
+ 734 018c 84       		.byte	-124
+ 735 018d 00       		.byte	0
+ 736 018e FF       		.byte	-1
+ 737 018f 85       		.byte	-123
+ 738 0190 00       		.byte	0
+ 739 0191 FF       		.byte	-1
+ 740 0192 86       		.byte	-122
+ 741 0193 00       		.byte	0
+ 742 0194 FF       		.byte	-1
+ 743 0195 87       		.byte	-121
+ 744 0196 00       		.byte	0
+ 745 0197 FF       		.byte	-1
+ 746 0198 88       		.byte	-120
+ 747 0199 00       		.byte	0
+ 748 019a FF       		.byte	-1
+ 749 019b 89       		.byte	-119
+ 750 019c 00       		.byte	0
+ 751 019d FF       		.byte	-1
+ 752 019e 8A       		.byte	-118
+ 753 019f 00       		.byte	0
+ 754 01a0 FF       		.byte	-1
+ 755 01a1 8B       		.byte	-117
+ 756 01a2 00       		.byte	0
+ 757 01a3 FF       		.byte	-1
+ 758 01a4 8C       		.byte	-116
+ 759 01a5 00       		.byte	0
+ 760 01a6 FF       		.byte	-1
+ 761 01a7 8D       		.byte	-115
+ 762 01a8 00       		.byte	0
+ 763 01a9 FF       		.byte	-1
+ 764 01aa 8E       		.byte	-114
+ 765 01ab 00       		.byte	0
+ 766 01ac FF       		.byte	-1
+ 767 01ad 8F       		.byte	-113
+ 768 01ae 00       		.byte	0
+ 769 01af FF       		.byte	-1
+ 770 01b0 90       		.byte	-112
+ 771 01b1 00       		.byte	0
+ 772 01b2 FF       		.byte	-1
+ 773 01b3 91       		.byte	-111
+ 774 01b4 00       		.byte	0
+ 775 01b5 00       		.byte	0
+ 776 01b6 92       		.byte	-110
+ 777 01b7 55       		.byte	85
+ 778 01b8 00       		.byte	0
+ 779 01b9 93       		.byte	-109
+ 780 01ba 00       		.byte	0
+ 781 01bb 00       		.byte	0
+ 782 01bc 94       		.byte	-108
+ 783 01bd 00       		.byte	0
+ 784 01be 00       		.byte	0
+ 785 01bf 95       		.byte	-107
+ 786 01c0 00       		.byte	0
+ 787 01c1 00       		.byte	0
+ 788 01c2 96       		.byte	-106
+ 789 01c3 00       		.byte	0
+ 790 01c4 00       		.byte	0
+ 791 01c5 97       		.byte	-105
+ 792 01c6 00       		.byte	0
+ 793 01c7 00       		.byte	0
+ 794 01c8 98       		.byte	-104
+ 795 01c9 00       		.byte	0
+ 796 01ca FF       		.byte	-1
+ 797 01cb 99       		.byte	-103
+ 798 01cc 00       		.byte	0
+ 799 01cd FF       		.byte	-1
+ 800 01ce 9A       		.byte	-102
+ 801 01cf 00       		.byte	0
+ 802 01d0 FF       		.byte	-1
+ 803 01d1 9B       		.byte	-101
+ 804 01d2 00       		.byte	0
+ 805 01d3 FF       		.byte	-1
+ 806 01d4 9C       		.byte	-100
+ 807 01d5 00       		.byte	0
+ 808 01d6 FF       		.byte	-1
+ 809 01d7 9D       		.byte	-99
+ 810 01d8 00       		.byte	0
+ 811 01d9 FF       		.byte	-1
+ 812 01da 9E       		.byte	-98
+ 813 01db 00       		.byte	0
+ 814 01dc 0F       		.byte	15
+ 815 01dd 9F       		.byte	-97
+ 816 01de 00       		.byte	0
+ 817 01df 0F       		.byte	15
+ 818 01e0 A0       		.byte	-96
+ 819 01e1 00       		.byte	0
+ 820 01e2 FF       		.byte	-1
+ 821 01e3 A1       		.byte	-95
+ 822 01e4 00       		.byte	0
+ 823 01e5 FF       		.byte	-1
+ 824 01e6 A2       		.byte	-94
+ 825 01e7 00       		.byte	0
+ 826 01e8 FF       		.byte	-1
+ 827 01e9 A3       		.byte	-93
+ 828 01ea 00       		.byte	0
+ 829 01eb FF       		.byte	-1
+ 830 01ec A4       		.byte	-92
+ 831 01ed 00       		.byte	0
+ 832 01ee FF       		.byte	-1
+ 833 01ef A5       		.byte	-91
+ 834 01f0 00       		.byte	0
+ 835 01f1 FF       		.byte	-1
+ 836 01f2 A6       		.byte	-90
+ 837 01f3 00       		.byte	0
+ 838 01f4 FF       		.byte	-1
+ 839 01f5 A7       		.byte	-89
+ 840 01f6 00       		.byte	0
+ 841 01f7 FF       		.byte	-1
+ 842 01f8 A8       		.byte	-88
+ 843 01f9 00       		.byte	0
+ 844 01fa FF       		.byte	-1
+ 845 01fb A9       		.byte	-87
+ 846 01fc 00       		.byte	0
+ 847 01fd FF       		.byte	-1
+ 848 01fe AA       		.byte	-86
+ 849 01ff 00       		.byte	0
+ 850 0200 FF       		.byte	-1
+ 851 0201 AB       		.byte	-85
+ 852 0202 00       		.byte	0
+ 853 0203 FF       		.byte	-1
+ 854 0204 AC       		.byte	-84
+ 855 0205 00       		.byte	0
+ 856 0206 FF       		.byte	-1
+ 857 0207 AD       		.byte	-83
+ 858 0208 00       		.byte	0
+ 859 0209 FF       		.byte	-1
+ 860 020a AE       		.byte	-82
+ 861 020b 00       		.byte	0
+ 862 020c FF       		.byte	-1
+ 863 020d AF       		.byte	-81
+ 864 020e 00       		.byte	0
+ 865 020f FF       		.byte	-1
+ 866 0210 B0       		.byte	-80
+ 867 0211 00       		.byte	0
+ 868 0212 FF       		.byte	-1
+ 869 0213 B1       		.byte	-79
+ 870 0214 00       		.byte	0
+ 871 0215 FF       		.byte	-1
+ 872 0216 B2       		.byte	-78
+ 873 0217 00       		.byte	0
+ 874 0218 FF       		.byte	-1
+ 875 0219 B3       		.byte	-77
+ 876 021a 00       		.byte	0
+ 877 021b FF       		.byte	-1
+ 878 021c B4       		.byte	-76
+ 879 021d 00       		.byte	0
+ 880 021e FF       		.byte	-1
+ 881 021f B5       		.byte	-75
+ 882 0220 00       		.byte	0
+ 883 0221 0F       		.byte	15
+ 884 0222 B6       		.byte	-74
+ 885 0223 00       		.byte	0
+ 886 0224 FF       		.byte	-1
+ 887 0225 B7       		.byte	-73
+ 888 0226 00       		.byte	0
+ 889 0227 FF       		.byte	-1
+ 890 0228 B8       		.byte	-72
+ 891 0229 00       		.byte	0
+ 892 022a FF       		.byte	-1
+ 893 022b B9       		.byte	-71
+ 894 022c 00       		.byte	0
+ 895 022d FF       		.byte	-1
+ 896 022e BA       		.byte	-70
+ 897 022f 00       		.byte	0
+ 898 0230 FF       		.byte	-1
+ 899 0231 BB       		.byte	-69
+ 900 0232 00       		.byte	0
+ 901 0233 FF       		.byte	-1
+ 902 0234 BC       		.byte	-68
+ 903 0235 00       		.byte	0
+ 904 0236 FF       		.byte	-1
+ 905 0237 BD       		.byte	-67
+ 906 0238 00       		.byte	0
+ 907 0239 FF       		.byte	-1
+ 908 023a BE       		.byte	-66
+ 909 023b 00       		.byte	0
+ 910 023c FF       		.byte	-1
+ 911 023d BF       		.byte	-65
+ 912 023e 00       		.byte	0
+ 913 023f FF       		.byte	-1
+ 914 0240 C0       		.byte	-64
+ 915 0241 00       		.byte	0
+ 916 0242 FF       		.byte	-1
+ 917 0243 C1       		.byte	-63
+ 918 0244 00       		.byte	0
+ 919 0245 FF       		.byte	-1
+ 920 0246 C2       		.byte	-62
+ 921 0247 00       		.byte	0
+ 922 0248 FF       		.byte	-1
+ 923 0249 C3       		.byte	-61
+ 924 024a 00       		.byte	0
+ 925 024b FF       		.byte	-1
+ 926 024c C4       		.byte	-60
+ 927 024d 00       		.byte	0
+ 928 024e FF       		.byte	-1
+ 929 024f C5       		.byte	-59
+ 930 0250 00       		.byte	0
+ 931 0251 FF       		.byte	-1
+ 932 0252 C6       		.byte	-58
+ 933 0253 00       		.byte	0
+ 934 0254 FF       		.byte	-1
+ 935 0255 C7       		.byte	-57
+ 936 0256 00       		.byte	0
+ 937 0257 FF       		.byte	-1
+ 938 0258 C8       		.byte	-56
+ 939 0259 00       		.byte	0
+ 940 025a FF       		.byte	-1
+ 941 025b C9       		.byte	-55
+ 942 025c 00       		.byte	0
+ 943 025d FF       		.byte	-1
+ 944 025e CA       		.byte	-54
+ 945 025f 00       		.byte	0
+ 946 0260 FF       		.byte	-1
+ 947 0261 CB       		.byte	-53
+ 948 0262 00       		.byte	0
+ 949 0263 0F       		.byte	15
+ 950 0264 CC       		.byte	-52
+ 951 0265 00       		.byte	0
+ 952 0266 FF       		.byte	-1
+ 953 0267 CD       		.byte	-51
+ 954 0268 00       		.byte	0
+ 955 0269 FF       		.byte	-1
+ 956 026a CE       		.byte	-50
+ 957 026b 00       		.byte	0
+ 958 026c FF       		.byte	-1
+ 959 026d CF       		.byte	-49
+ 960 026e 00       		.byte	0
+ 961 026f FF       		.byte	-1
+ 962 0270 D0       		.byte	-48
+ 963 0271 00       		.byte	0
+ 964 0272 FF       		.byte	-1
+ 965 0273 D1       		.byte	-47
+ 966 0274 00       		.byte	0
+ 967 0275 FF       		.byte	-1
+ 968 0276 D2       		.byte	-46
+ 969 0277 00       		.byte	0
+ 970 0278 FF       		.byte	-1
+ 971 0279 D3       		.byte	-45
+ 972 027a 00       		.byte	0
+ 973 027b FF       		.byte	-1
+ 974 027c D4       		.byte	-44
+ 975 027d 00       		.byte	0
+ 976 027e FF       		.byte	-1
+ 977 027f D5       		.byte	-43
+ 978 0280 00       		.byte	0
+ 979 0281 FF       		.byte	-1
+ 980 0282 D6       		.byte	-42
+ 981 0283 00       		.byte	0
+ 982 0284 FF       		.byte	-1
+ 983 0285 D7       		.byte	-41
+ 984 0286 00       		.byte	0
+ 985 0287 FF       		.byte	-1
+ 986 0288 D8       		.byte	-40
+ 987 0289 00       		.byte	0
+ 988 028a FF       		.byte	-1
+ 989 028b D9       		.byte	-39
+ 990 028c 00       		.byte	0
+ 991 028d FF       		.byte	-1
+ 992 028e DA       		.byte	-38
+ 993 028f 18       		.byte	24
+ 994 0290 00       		.byte	0
+ 995 0291 DB       		.byte	-37
+ 996 0292 00       		.byte	0
+ 997 0293 00       		.byte	0
+ 998 0294 DC       		.byte	-36
+ 999 0295 00       		.byte	0
+ 1000 0296 00       		.byte	0
+ 1001 0297 DD       		.byte	-35
+ 1002 0298 0D       		.byte	13
+ 1003 0299 00       		.byte	0
+ 1004 029a DE       		.byte	-34
+ 1005 029b 00       		.byte	0
+ 1006 029c 00       		.byte	0
+ 1007 029d DF       		.byte	-33
+ 1008 029e 00       		.byte	0
+ 1009 029f 00       		.byte	0
+ 1010 02a0 E0       		.byte	-32
+ 1011 02a1 F4       		.byte	-12
+ 1012 02a2 00       		.byte	0
+ 1013 02a3 E1       		.byte	-31
+ 1014 02a4 F0       		.byte	-16
+ 1015 02a5 00       		.byte	0
+ 1016 02a6 E2       		.byte	-30
+ 1017 02a7 00       		.byte	0
+ 1018 02a8 00       		.byte	0
+ 1019 02a9 E3       		.byte	-29
+ 1020 02aa 00       		.byte	0
+ 1021 02ab 00       		.byte	0
+ 1022 02ac E4       		.byte	-28
+ 1023 02ad 00       		.byte	0
+ 1024 02ae 00       		.byte	0
+ 1025 02af E5       		.byte	-27
+ 1026 02b0 12       		.byte	18
+ 1027 02b1 00       		.byte	0
+ 1028 02b2 E7       		.byte	-25
+ 1029 02b3 00       		.byte	0
+ 1030 02b4 00       		.byte	0
+ 1031 02b5 E8       		.byte	-24
+ 1032 02b6 00       		.byte	0
+ 1033 02b7 00       		.byte	0
+ 1034 02b8 E9       		.byte	-23
+ 1035 02b9 00       		.byte	0
+ 1036 02ba 00       		.byte	0
+ 1037 02bb EA       		.byte	-22
+ 1038 02bc 00       		.byte	0
+ 1039 02bd 00       		.byte	0
+ 1040 02be EB       		.byte	-21
+ 1041 02bf F7       		.byte	-9
+ 1042 02c0 00       		.byte	0
+ 1043 02c1 EC       		.byte	-20
+ 1044 02c2 0F       		.byte	15
+ 1045 02c3 00       		.byte	0
+ 1046 02c4 ED       		.byte	-19
+ 1047 02c5 00       		.byte	0
+ 1048 02c6 00       		.byte	0
+ 1049 02c7 EE       		.byte	-18
+ 1050 02c8 14       		.byte	20
+ 1051 02c9 00       		.byte	0
+ 1052 02ca EF       		.byte	-17
+ 1053 02cb 0A       		.byte	10
+ 1054 02cc 00       		.byte	0
+ 1055 02cd F0       		.byte	-16
+ 1056 02ce 4E       		.byte	78
+ 1057 02cf 00       		.byte	0
+ 1058 02d0 F2       		.byte	-14
+ 1059 02d1 00       		.byte	0
+ 1060 02d2 02       		.byte	2
+ 1061 02d3 F3       		.byte	-13
+ 1062 02d4 F0       		.byte	-16
+ 1063 02d5 00       		.byte	0
+ 1064 02d6 F4       		.byte	-12
+ 1065 02d7 00       		.byte	0
+ 1066 02d8 00       		.byte	0
+ 1067 02d9 F5       		.byte	-11
+ 1068 02da 00       		.byte	0
+ 1069 02db 00       		.byte	0
+ 1070 02dc F7       		.byte	-9
+ 1071 02dd 1D       		.byte	29
+ 1072 02de 00       		.byte	0
+ 1073 02df F8       		.byte	-8
+ 1074 02e0 00       		.byte	0
+ 1075 02e1 00       		.byte	0
+ 1076 02e2 F9       		.byte	-7
+ 1077 02e3 A8       		.byte	-88
+ 1078 02e4 00       		.byte	0
+ 1079 02e5 FA       		.byte	-6
+ 1080 02e6 00       		.byte	0
+ 1081 02e7 00       		.byte	0
+ 1082 02e8 FB       		.byte	-5
+ 1083 02e9 80       		.byte	-128
+ 1084 02ea 00       		.byte	0
+ 1085 02eb FC       		.byte	-4
+ 1086 02ec 00       		.byte	0
+ 1087 02ed 00       		.byte	0
+ 1088 02ee FD       		.byte	-3
+ 1089 02ef 00       		.byte	0
+ 1090 02f0 00       		.byte	0
+ 1091 02f1 FE       		.byte	-2
+ 1092 02f2 00       		.byte	0
+ 1093 02f3 00       		.byte	0
+ 1094 02f4 FF       		.byte	-1
+ 1095 02f5 01       		.byte	1
+ 1096 02f6 FF       		.byte	-1
+ 1097 02f7 00       		.byte	0
+ 1098 02f8 00       		.byte	0
+ 1099 02f9 00       		.byte	0
+ 1100 02fa 01       		.byte	1
+ 1101 02fb 00       		.byte	0
+ 1102 02fc 00       		.byte	0
+ 1103 02fd 02       		.byte	2
+ 1104 02fe 00       		.byte	0
+ 1105 02ff 00       		.byte	0
+ 1106 0300 03       		.byte	3
+ 1107 0301 00       		.byte	0
+ 1108 0302 00       		.byte	0
+ 1109 0303 04       		.byte	4
+ 1110 0304 00       		.byte	0
+ 1111 0305 00       		.byte	0
+ 1112 0306 05       		.byte	5
+ 1113 0307 00       		.byte	0
+ 1114 0308 00       		.byte	0
+ 1115 0309 06       		.byte	6
+ 1116 030a 00       		.byte	0
+ 1117 030b 00       		.byte	0
+ 1118 030c 07       		.byte	7
+ 1119 030d 00       		.byte	0
+ 1120 030e 00       		.byte	0
+ 1121 030f 08       		.byte	8
+ 1122 0310 00       		.byte	0
+ 1123 0311 00       		.byte	0
+ 1124 0312 09       		.byte	9
+ 1125 0313 00       		.byte	0
+ 1126 0314 00       		.byte	0
+ 1127 0315 0A       		.byte	10
+ 1128 0316 00       		.byte	0
+ 1129 0317 00       		.byte	0
+ 1130 0318 0B       		.byte	11
+ 1131 0319 00       		.byte	0
+ 1132 031a 00       		.byte	0
+ 1133 031b 0C       		.byte	12
+ 1134 031c 00       		.byte	0
+ 1135 031d 00       		.byte	0
+ 1136 031e 0D       		.byte	13
+ 1137 031f 00       		.byte	0
+ 1138 0320 00       		.byte	0
+ 1139 0321 0E       		.byte	14
+ 1140 0322 00       		.byte	0
+ 1141 0323 00       		.byte	0
+ 1142 0324 0F       		.byte	15
+ 1143 0325 00       		.byte	0
+ 1144 0326 00       		.byte	0
+ 1145 0327 10       		.byte	16
+ 1146 0328 00       		.byte	0
+ 1147 0329 00       		.byte	0
+ 1148 032a 11       		.byte	17
+ 1149 032b 01       		.byte	1
+ 1150 032c 00       		.byte	0
+ 1151 032d 12       		.byte	18
+ 1152 032e 00       		.byte	0
+ 1153 032f 00       		.byte	0
+ 1154 0330 13       		.byte	19
+ 1155 0331 00       		.byte	0
+ 1156 0332 00       		.byte	0
+ 1157 0333 14       		.byte	20
+ 1158 0334 90       		.byte	-112
+ 1159 0335 00       		.byte	0
+ 1160 0336 15       		.byte	21
+ 1161 0337 31       		.byte	49
+ 1162 0338 00       		.byte	0
+ 1163 0339 16       		.byte	22
+ 1164 033a 00       		.byte	0
+ 1165 033b 00       		.byte	0
+ 1166 033c 17       		.byte	23
+ 1167 033d 00       		.byte	0
+ 1168 033e 00       		.byte	0
+ 1169 033f 18       		.byte	24
+ 1170 0340 01       		.byte	1
+ 1171 0341 00       		.byte	0
+ 1172 0342 19       		.byte	25
+ 1173 0343 00       		.byte	0
+ 1174 0344 00       		.byte	0
+ 1175 0345 1A       		.byte	26
+ 1176 0346 00       		.byte	0
+ 1177 0347 00       		.byte	0
+ 1178 0348 1B       		.byte	27
+ 1179 0349 00       		.byte	0
+ 1180 034a 00       		.byte	0
+ 1181 034b 1C       		.byte	28
+ 1182 034c 00       		.byte	0
+ 1183 034d 00       		.byte	0
+ 1184 034e 1D       		.byte	29
+ 1185 034f 00       		.byte	0
+ 1186 0350 00       		.byte	0
+ 1187 0351 1E       		.byte	30
+ 1188 0352 00       		.byte	0
+ 1189 0353 00       		.byte	0
+ 1190 0354 1F       		.byte	31
+ 1191 0355 00       		.byte	0
+ 1192 0356 FF       		.byte	-1
+ 1193 0357 20       		.byte	32
+ 1194 0358 00       		.byte	0
+ 1195 0359 FF       		.byte	-1
+ 1196 035a 21       		.byte	33
+ 1197 035b 01       		.byte	1
+ 1198 035c FF       		.byte	-1
+ 1199 035d 22       		.byte	34
+ 1200 035e 00       		.byte	0
+ 1201 035f FF       		.byte	-1
+ 1202 0360 23       		.byte	35
+ 1203 0361 00       		.byte	0
+ 1204 0362 FF       		.byte	-1
+ 1205 0363 24       		.byte	36
+ 1206 0364 90       		.byte	-112
+ 1207 0365 FF       		.byte	-1
+ 1208 0366 25       		.byte	37
+ 1209 0367 31       		.byte	49
+ 1210 0368 FF       		.byte	-1
+ 1211 0369 26       		.byte	38
+ 1212 036a 00       		.byte	0
+ 1213 036b FF       		.byte	-1
+ 1214 036c 27       		.byte	39
+ 1215 036d 00       		.byte	0
+ 1216 036e FF       		.byte	-1
+ 1217 036f 28       		.byte	40
+ 1218 0370 01       		.byte	1
+ 1219 0371 FF       		.byte	-1
+ 1220 0372 29       		.byte	41
+ 1221 0373 00       		.byte	0
+ 1222 0374 FF       		.byte	-1
+ 1223 0375 2A       		.byte	42
+ 1224 0376 00       		.byte	0
+ 1225 0377 FF       		.byte	-1
+ 1226 0378 2B       		.byte	43
+ 1227 0379 00       		.byte	0
+ 1228 037a 0F       		.byte	15
+ 1229 037b 2C       		.byte	44
+ 1230 037c 00       		.byte	0
+ 1231 037d 00       		.byte	0
+ 1232 037e 2D       		.byte	45
+ 1233 037f 00       		.byte	0
+ 1234 0380 00       		.byte	0
+ 1235 0381 2E       		.byte	46
+ 1236 0382 00       		.byte	0
+ 1237 0383 00       		.byte	0
+ 1238 0384 2F       		.byte	47
+ 1239 0385 00       		.byte	0
+ 1240 0386 FF       		.byte	-1
+ 1241 0387 30       		.byte	48
+ 1242 0388 00       		.byte	0
+ 1243 0389 FF       		.byte	-1
+ 1244 038a 31       		.byte	49
+ 1245 038b 01       		.byte	1
+ 1246 038c FF       		.byte	-1
+ 1247 038d 32       		.byte	50
+ 1248 038e 00       		.byte	0
+ 1249 038f FF       		.byte	-1
+ 1250 0390 33       		.byte	51
+ 1251 0391 00       		.byte	0
+ 1252 0392 FF       		.byte	-1
+ 1253 0393 34       		.byte	52
+ 1254 0394 90       		.byte	-112
+ 1255 0395 FF       		.byte	-1
+ 1256 0396 35       		.byte	53
+ 1257 0397 31       		.byte	49
+ 1258 0398 FF       		.byte	-1
+ 1259 0399 36       		.byte	54
+ 1260 039a 00       		.byte	0
+ 1261 039b FF       		.byte	-1
+ 1262 039c 37       		.byte	55
+ 1263 039d 00       		.byte	0
+ 1264 039e FF       		.byte	-1
+ 1265 039f 38       		.byte	56
+ 1266 03a0 01       		.byte	1
+ 1267 03a1 FF       		.byte	-1
+ 1268 03a2 39       		.byte	57
+ 1269 03a3 00       		.byte	0
+ 1270 03a4 FF       		.byte	-1
+ 1271 03a5 3A       		.byte	58
+ 1272 03a6 00       		.byte	0
+ 1273 03a7 FF       		.byte	-1
+ 1274 03a8 3B       		.byte	59
+ 1275 03a9 00       		.byte	0
+ 1276 03aa 0F       		.byte	15
+ 1277 03ab 3C       		.byte	60
+ 1278 03ac 00       		.byte	0
+ 1279 03ad 00       		.byte	0
+ 1280 03ae 3D       		.byte	61
+ 1281 03af 00       		.byte	0
+ 1282 03b0 00       		.byte	0
+ 1283 03b1 3E       		.byte	62
+ 1284 03b2 00       		.byte	0
+ 1285 03b3 00       		.byte	0
+ 1286 03b4 3F       		.byte	63
+ 1287 03b5 00       		.byte	0
+ 1288 03b6 FF       		.byte	-1
+ 1289 03b7 40       		.byte	64
+ 1290 03b8 00       		.byte	0
+ 1291 03b9 FF       		.byte	-1
+ 1292 03ba 41       		.byte	65
+ 1293 03bb 01       		.byte	1
+ 1294 03bc FF       		.byte	-1
+ 1295 03bd 42       		.byte	66
+ 1296 03be 00       		.byte	0
+ 1297 03bf FF       		.byte	-1
+ 1298 03c0 43       		.byte	67
+ 1299 03c1 00       		.byte	0
+ 1300 03c2 FF       		.byte	-1
+ 1301 03c3 44       		.byte	68
+ 1302 03c4 90       		.byte	-112
+ 1303 03c5 FF       		.byte	-1
+ 1304 03c6 45       		.byte	69
+ 1305 03c7 31       		.byte	49
+ 1306 03c8 FF       		.byte	-1
+ 1307 03c9 46       		.byte	70
+ 1308 03ca 00       		.byte	0
+ 1309 03cb FF       		.byte	-1
+ 1310 03cc 47       		.byte	71
+ 1311 03cd 00       		.byte	0
+ 1312 03ce FF       		.byte	-1
+ 1313 03cf 48       		.byte	72
+ 1314 03d0 01       		.byte	1
+ 1315 03d1 FF       		.byte	-1
+ 1316 03d2 49       		.byte	73
+ 1317 03d3 00       		.byte	0
+ 1318 03d4 FF       		.byte	-1
+ 1319 03d5 4A       		.byte	74
+ 1320 03d6 00       		.byte	0
+ 1321 03d7 FF       		.byte	-1
+ 1322 03d8 4B       		.byte	75
+ 1323 03d9 00       		.byte	0
+ 1324 03da 0F       		.byte	15
+ 1325 03db 4C       		.byte	76
+ 1326 03dc 00       		.byte	0
+ 1327 03dd 00       		.byte	0
+ 1328 03de 4D       		.byte	77
+ 1329 03df 00       		.byte	0
+ 1330 03e0 00       		.byte	0
+ 1331 03e1 4E       		.byte	78
+ 1332 03e2 00       		.byte	0
+ 1333 03e3 00       		.byte	0
+ 1334 03e4 4F       		.byte	79
+ 1335 03e5 00       		.byte	0
+ 1336 03e6 FF       		.byte	-1
+ 1337 03e7 50       		.byte	80
+ 1338 03e8 00       		.byte	0
+ 1339 03e9 FF       		.byte	-1
+ 1340 03ea 51       		.byte	81
+ 1341 03eb 01       		.byte	1
+ 1342 03ec FF       		.byte	-1
+ 1343 03ed 52       		.byte	82
+ 1344 03ee 00       		.byte	0
+ 1345 03ef FF       		.byte	-1
+ 1346 03f0 53       		.byte	83
+ 1347 03f1 00       		.byte	0
+ 1348 03f2 FF       		.byte	-1
+ 1349 03f3 54       		.byte	84
+ 1350 03f4 90       		.byte	-112
+ 1351 03f5 FF       		.byte	-1
+ 1352 03f6 55       		.byte	85
+ 1353 03f7 31       		.byte	49
+ 1354 03f8 FF       		.byte	-1
+ 1355 03f9 56       		.byte	86
+ 1356 03fa 00       		.byte	0
+ 1357 03fb FF       		.byte	-1
+ 1358 03fc 57       		.byte	87
+ 1359 03fd 00       		.byte	0
+ 1360 03fe FF       		.byte	-1
+ 1361 03ff 58       		.byte	88
+ 1362 0400 01       		.byte	1
+ 1363 0401 FF       		.byte	-1
+ 1364 0402 59       		.byte	89
+ 1365 0403 00       		.byte	0
+ 1366 0404 FF       		.byte	-1
+ 1367 0405 5A       		.byte	90
+ 1368 0406 00       		.byte	0
+ 1369 0407 FF       		.byte	-1
+ 1370 0408 5B       		.byte	91
+ 1371 0409 00       		.byte	0
+ 1372 040a 0F       		.byte	15
+ 1373 040b 5C       		.byte	92
+ 1374 040c 00       		.byte	0
+ 1375 040d 00       		.byte	0
+ 1376 040e 5D       		.byte	93
+ 1377 040f 00       		.byte	0
+ 1378 0410 00       		.byte	0
+ 1379 0411 5E       		.byte	94
+ 1380 0412 00       		.byte	0
+ 1381 0413 00       		.byte	0
+ 1382 0414 FF       		.byte	-1
+ 1383 0415 00       		.byte	0
+ 1384 0416 FF       		.byte	-1
+ 1385 0417 000000   		.space	3
+ 1386 041a 0000     		.section	.data.j.8845,"aw",%progbits
+ 1387              		.align	1
+ 1388              		.set	.LANCHOR0,. + 0
+ 1391              	j.8845:
+ 1392 0000 0100     		.short	1
+ 1393              		.text
+ 1394              	.Letext0:
+ 1395              		.file 2 "/opt/toolchains/eabi/arm-2014.05/arm-none-eabi/include/stdint.h"
+ 1396              		.file 3 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_gpio.h"
+ 1397              		.file 4 "spi/spi.h"
+ 1398              		.file 5 "inc/register_map.h"
+ 1399              		.file 6 "Libraries/FreeRTOS/Source/include/projdefs.h"
+ 1400              		.file 7 "Libraries/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+ 1401              		.file 8 "Libraries/FreeRTOS/Source/include/task.h"
+ 1402              		.file 9 "Libraries/CMSIS/Include/core_cm4.h"
+ 1403              		.file 10 "fifo/fifo.h"
+ 1404              		.file 11 "usart/usart.h"
+ 1405              		.file 12 "led/led.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+     /tmp/ccB7Z7Ak.s:21     .text.vTask2:00000000 $t
+     /tmp/ccB7Z7Ak.s:26     .text.vTask2:00000000 vTask2
+     /tmp/ccB7Z7Ak.s:1388   .data.j.8845:00000000 .LANCHOR0
+     /tmp/ccB7Z7Ak.s:316    .rodata.str1.4:00000000 .LC0
+     /tmp/ccB7Z7Ak.s:319    .rodata.str1.4:00000018 .LC1
+     /tmp/ccB7Z7Ak.s:95     .text.vTask1:00000000 $t
+     /tmp/ccB7Z7Ak.s:100    .text.vTask1:00000000 vTask1
+     /tmp/ccB7Z7Ak.s:322    .rodata.str1.4:0000002c .LC2
+     /tmp/ccB7Z7Ak.s:168    .text.vFuncCallMalloc:00000000 $t
+     /tmp/ccB7Z7Ak.s:173    .text.vFuncCallMalloc:00000000 vFuncCallMalloc
+     /tmp/ccB7Z7Ak.s:217    .text.startup.main:00000000 $t
+     /tmp/ccB7Z7Ak.s:222    .text.startup.main:00000000 main
+     /tmp/ccB7Z7Ak.s:325    .rodata.str1.4:00000044 .LC3
+     /tmp/ccB7Z7Ak.s:328    .rodata.str1.4:00000054 .LC4
+     /tmp/ccB7Z7Ak.s:331    .rodata.str1.4:0000005c .LC5
+     /tmp/ccB7Z7Ak.s:289    .text.assert_failed:00000000 $t
+     /tmp/ccB7Z7Ak.s:294    .text.assert_failed:00000000 assert_failed
+                            *COM*:00000008 GPIO_InitStructure
+                            *COM*:000003e8 Fifo
+                            *COM*:00000004 GETPT
+                            *COM*:00000004 PUTPT
+     /tmp/ccB7Z7Ak.s:337    .rodata.Reg_Store:00000000 Reg_Store
+                            *COM*:00000001 SPI_MODE
+     /tmp/ccB7Z7Ak.s:315    .rodata.str1.4:00000000 $d
+     /tmp/ccB7Z7Ak.s:334    .rodata.Reg_Store:00000000 $d
+     /tmp/ccB7Z7Ak.s:1387   .data.j.8845:00000000 $d
+     /tmp/ccB7Z7Ak.s:1391   .data.j.8845:00000000 j.8845
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+LED_On
+vDebugPrintf
+vTaskDelay
+InitFifo
+USART_Config
+LED_Init
+xTaskGenericCreate
+vTaskStartScheduler

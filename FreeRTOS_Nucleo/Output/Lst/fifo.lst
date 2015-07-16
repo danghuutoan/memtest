@@ -1,0 +1,243 @@
+   1              		.syntax unified
+   2              		.cpu cortex-m4
+   3              		.eabi_attribute 27, 3
+   4              		.eabi_attribute 28, 1
+   5              		.fpu fpv4-sp-d16
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 2
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.thumb
+  16              		.file	"fifo.c"
+  17              		.text
+  18              	.Ltext0:
+  19              		.cfi_sections	.debug_frame
+  20              		.section	.text.InitFifo,"ax",%progbits
+  21              		.align	2
+  22              		.global	InitFifo
+  23              		.thumb
+  24              		.thumb_func
+  26              	InitFifo:
+  27              	.LFB123:
+  28              		.file 1 "fifo/fifo.c"
+   1:fifo/fifo.c   **** 
+   2:fifo/fifo.c   **** /*
+   3:fifo/fifo.c   ****  * fifo.c
+   4:fifo/fifo.c   ****  *
+   5:fifo/fifo.c   ****  *  Created on: Apr 15, 2015
+   6:fifo/fifo.c   ****  *      Author: toandang
+   7:fifo/fifo.c   ****  */
+   8:fifo/fifo.c   **** #include "fifo.h"
+   9:fifo/fifo.c   **** 
+  10:fifo/fifo.c   **** void InitFifo(void) {
+  29              		.loc 1 10 0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  11:fifo/fifo.c   ****     PUTPT=GETPT=&Fifo[0]; /* Empty when PUTPT=GETPT */
+  34              		.loc 1 11 0
+  35 0000 40F20001 		movw	r1, #:lower16:GETPT
+  36 0004 40F20002 		movw	r2, #:lower16:PUTPT
+  37 0008 C0F20001 		movt	r1, #:upper16:GETPT
+  38 000c 40F20003 		movw	r3, #:lower16:Fifo
+  39 0010 C0F20002 		movt	r2, #:upper16:PUTPT
+  40 0014 C0F20003 		movt	r3, #:upper16:Fifo
+  41 0018 0B60     		str	r3, [r1]
+  42 001a 1360     		str	r3, [r2]
+  43 001c 7047     		bx	lr
+  44              		.cfi_endproc
+  45              	.LFE123:
+  47 001e 00BF     		.section	.text.PutFifo,"ax",%progbits
+  48              		.align	2
+  49              		.global	PutFifo
+  50              		.thumb
+  51              		.thumb_func
+  53              	PutFifo:
+  54              	.LFB124:
+  12:fifo/fifo.c   **** }
+  13:fifo/fifo.c   **** int PutFifo (char data) { char *Ppt; /* Temporary put pointer */
+  55              		.loc 1 13 0
+  56              		.cfi_startproc
+  57              		@ args = 0, pretend = 0, frame = 0
+  58              		@ frame_needed = 0, uses_anonymous_args = 0
+  59              	.LVL0:
+  60 0000 38B5     		push	{r3, r4, r5, lr}
+  61              	.LCFI0:
+  62              		.cfi_def_cfa_offset 16
+  63              		.cfi_offset 3, -16
+  64              		.cfi_offset 4, -12
+  65              		.cfi_offset 5, -8
+  66              		.cfi_offset 14, -4
+  14:fifo/fifo.c   ****     Ppt=PUTPT; /* Copy of put pointer */
+  67              		.loc 1 14 0
+  68 0002 40F20004 		movw	r4, #:lower16:PUTPT
+  69 0006 C0F20004 		movt	r4, #:upper16:PUTPT
+  15:fifo/fifo.c   ****     *(Ppt++)=data; /* Try to put data into fifo */
+  16:fifo/fifo.c   ****     USART_ITConfig(USART2,USART_IT_TXE,ENABLE);
+  70              		.loc 1 16 0
+  71 000a 40F22771 		movw	r1, #1831
+  14:fifo/fifo.c   ****     Ppt=PUTPT; /* Copy of put pointer */
+  72              		.loc 1 14 0
+  73 000e 2568     		ldr	r5, [r4]
+  74              	.LVL1:
+  15:fifo/fifo.c   ****     *(Ppt++)=data; /* Try to put data into fifo */
+  75              		.loc 1 15 0
+  76 0010 2870     		strb	r0, [r5]
+  77              		.loc 1 16 0
+  78 0012 4FF48840 		mov	r0, #17408
+  79              	.LVL2:
+  80 0016 C4F20000 		movt	r0, 16384
+  81 001a 0122     		movs	r2, #1
+  82 001c FFF7FEFF 		bl	USART_ITConfig
+  83              	.LVL3:
+  17:fifo/fifo.c   ****     if (Ppt == &Fifo[FifoSize]) Ppt = &Fifo[0]; /* Wrap */
+  84              		.loc 1 17 0
+  85 0020 084B     		ldr	r3, .L7
+  15:fifo/fifo.c   ****     *(Ppt++)=data; /* Try to put data into fifo */
+  86              		.loc 1 15 0
+  87 0022 6A1C     		adds	r2, r5, #1
+  88              	.LVL4:
+  89              		.loc 1 17 0
+  90 0024 9A42     		cmp	r2, r3
+  18:fifo/fifo.c   ****     if (Ppt == GETPT ){
+  91              		.loc 1 18 0
+  92 0026 40F20003 		movw	r3, #:lower16:GETPT
+  93 002a C0F20003 		movt	r3, #:upper16:GETPT
+  17:fifo/fifo.c   ****     if (Ppt == &Fifo[FifoSize]) Ppt = &Fifo[0]; /* Wrap */
+  94              		.loc 1 17 0
+  95 002e 08BF     		it	eq
+  96 0030 A5F16302 		subeq	r2, r5, #99
+  97              	.LVL5:
+  98              		.loc 1 18 0
+  99 0034 1B68     		ldr	r3, [r3]
+ 100 0036 9A42     		cmp	r2, r3
+  19:fifo/fifo.c   ****         return(0);}   /* Failed, fifo was full */
+  20:fifo/fifo.c   ****     else{
+  21:fifo/fifo.c   ****         PUTPT=Ppt;
+  22:fifo/fifo.c   ****         return(-1);   /* Successful */
+ 101              		.loc 1 22 0
+ 102 0038 1ABF     		itte	ne
+ 103 003a 4FF0FF30 		movne	r0, #-1
+  21:fifo/fifo.c   ****         return(-1);   /* Successful */
+ 104              		.loc 1 21 0
+ 105 003e 2260     		strne	r2, [r4]
+  19:fifo/fifo.c   ****         return(0);}   /* Failed, fifo was full */
+ 106              		.loc 1 19 0
+ 107 0040 0020     		moveq	r0, #0
+  23:fifo/fifo.c   ****     }
+  24:fifo/fifo.c   **** }
+ 108              		.loc 1 24 0
+ 109 0042 38BD     		pop	{r3, r4, r5, pc}
+ 110              	.L8:
+ 111              		.align	2
+ 112              	.L7:
+ 113 0044 64000000 		.word	Fifo+100
+ 114              		.cfi_endproc
+ 115              	.LFE124:
+ 117              		.section	.text.GetFifo,"ax",%progbits
+ 118              		.align	2
+ 119              		.global	GetFifo
+ 120              		.thumb
+ 121              		.thumb_func
+ 123              	GetFifo:
+ 124              	.LFB125:
+  25:fifo/fifo.c   **** int GetFifo (char *datapt) {
+ 125              		.loc 1 25 0
+ 126              		.cfi_startproc
+ 127              		@ args = 0, pretend = 0, frame = 0
+ 128              		@ frame_needed = 0, uses_anonymous_args = 0
+ 129              		@ link register save eliminated.
+ 130              	.LVL6:
+  26:fifo/fifo.c   ****     if (PUTPT== GETPT){
+ 131              		.loc 1 26 0
+ 132 0000 40F20003 		movw	r3, #:lower16:GETPT
+ 133 0004 40F20002 		movw	r2, #:lower16:PUTPT
+ 134 0008 C0F20003 		movt	r3, #:upper16:GETPT
+ 135 000c C0F20002 		movt	r2, #:upper16:PUTPT
+ 136 0010 1968     		ldr	r1, [r3]
+ 137 0012 1268     		ldr	r2, [r2]
+ 138 0014 8A42     		cmp	r2, r1
+ 139 0016 0FD0     		beq	.L11
+  27:fifo/fifo.c   ****         return(0);}   /* Empty if PUTPT=GETPT */
+  28:fifo/fifo.c   ****     else{
+  29:fifo/fifo.c   ****         *datapt=*(GETPT++);
+ 140              		.loc 1 29 0
+ 141 0018 4A1C     		adds	r2, r1, #1
+ 142 001a 1A60     		str	r2, [r3]
+ 143 001c 0A78     		ldrb	r2, [r1]	@ zero_extendqisi2
+  30:fifo/fifo.c   ****         if (GETPT == &Fifo[FifoSize])
+ 144              		.loc 1 30 0
+ 145 001e 0749     		ldr	r1, .L15
+  29:fifo/fifo.c   ****         if (GETPT == &Fifo[FifoSize])
+ 146              		.loc 1 29 0
+ 147 0020 0270     		strb	r2, [r0]
+ 148              		.loc 1 30 0
+ 149 0022 1A68     		ldr	r2, [r3]
+ 150 0024 8A42     		cmp	r2, r1
+ 151 0026 02D0     		beq	.L14
+  31:fifo/fifo.c   ****             GETPT = &Fifo[0];
+  32:fifo/fifo.c   ****         return(-1);
+ 152              		.loc 1 32 0
+ 153 0028 4FF0FF30 		mov	r0, #-1
+ 154              	.LVL7:
+  33:fifo/fifo.c   ****     }
+  34:fifo/fifo.c   **** }
+ 155              		.loc 1 34 0
+ 156 002c 7047     		bx	lr
+ 157              	.LVL8:
+ 158              	.L14:
+  31:fifo/fifo.c   ****             GETPT = &Fifo[0];
+ 159              		.loc 1 31 0
+ 160 002e 643A     		subs	r2, r2, #100
+ 161 0030 1A60     		str	r2, [r3]
+  32:fifo/fifo.c   ****     }
+ 162              		.loc 1 32 0
+ 163 0032 4FF0FF30 		mov	r0, #-1
+ 164              	.LVL9:
+ 165 0036 7047     		bx	lr
+ 166              	.LVL10:
+ 167              	.L11:
+  27:fifo/fifo.c   ****     else{
+ 168              		.loc 1 27 0
+ 169 0038 0020     		movs	r0, #0
+ 170              	.LVL11:
+ 171 003a 7047     		bx	lr
+ 172              	.L16:
+ 173              		.align	2
+ 174              	.L15:
+ 175 003c 64000000 		.word	Fifo+100
+ 176              		.cfi_endproc
+ 177              	.LFE125:
+ 179              		.comm	Fifo,100,4
+ 180              		.comm	GETPT,4,4
+ 181              		.comm	PUTPT,4,4
+ 182              		.text
+ 183              	.Letext0:
+ 184              		.file 2 "/opt/toolchains/eabi/arm-2014.05/arm-none-eabi/include/stdint.h"
+ 185              		.file 3 "inc/stm32f4xx.h"
+ 186              		.file 4 "Libraries/CMSIS/Include/core_cm4.h"
+ 187              		.file 5 "fifo/fifo.h"
+ 188              		.file 6 "Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_usart.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 fifo.c
+     /tmp/ccJ6s7k3.s:21     .text.InitFifo:00000000 $t
+     /tmp/ccJ6s7k3.s:26     .text.InitFifo:00000000 InitFifo
+                            *COM*:00000004 GETPT
+                            *COM*:00000004 PUTPT
+                            *COM*:00000064 Fifo
+     /tmp/ccJ6s7k3.s:48     .text.PutFifo:00000000 $t
+     /tmp/ccJ6s7k3.s:53     .text.PutFifo:00000000 PutFifo
+     /tmp/ccJ6s7k3.s:113    .text.PutFifo:00000044 $d
+     /tmp/ccJ6s7k3.s:118    .text.GetFifo:00000000 $t
+     /tmp/ccJ6s7k3.s:123    .text.GetFifo:00000000 GetFifo
+     /tmp/ccJ6s7k3.s:175    .text.GetFifo:0000003c $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+USART_ITConfig
